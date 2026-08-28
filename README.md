@@ -11,19 +11,30 @@ Built with [Next.js](https://nextjs.org/).
 
 ## Local development
 
-1. Download the following files and place them in `public/assets/audio`:
-   * [main.webm](https://www.salsabeatmachine.org/assets/audio/main.webm) 
-   * [main.mp3](https://www.salsabeatmachine.org/assets/audio/main.mp3) 
-   * [main.json](https://www.salsabeatmachine.org/assets/audio/main.json)
-
-2. Run:
+1. Run:
 
 ```shell
 npm install
+npm run fetch:audio
 npm run dev
 ```
 
+`fetch:audio` downloads the sample bank (`main.webm`, `main.mp3`, `main.json`) from
+salsabeatmachine.org into `public/assets/audio`, which the repo does not carry.
+
 Then go to http://localhost:3009/ and start hacking!
+
+## Serving the static export under a path prefix
+
+`npm run build` writes a static `out/`. It assumes the site root; set
+`NEXT_PUBLIC_BASE_PATH` to serve it from somewhere else:
+
+```shell
+NEXT_PUBLIC_BASE_PATH=/some/prefix npm run build
+```
+
+That sets Next's `basePath` and the audio bank's URL together, so both the page
+assets and the samples resolve under the prefix.
 
 ## Backend Features
 

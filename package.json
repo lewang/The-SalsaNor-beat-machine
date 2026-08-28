@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3009",
+    "fetch:audio": "node scripts/fetch-audio-bank.mjs",
     "build": "npm run build:widget && next build && npm run postbuild",
     "build:widget": "vite build",
     "postbuild": "cp -r public/assets out/ 2>/dev/null || true && mkdir -p out/_next/static && cp -r .next/static/css .next/static/chunks .next/static/*/ out/_next/static/ 2>/dev/null || true",
