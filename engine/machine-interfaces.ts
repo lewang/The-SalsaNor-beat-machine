@@ -27,9 +27,12 @@ export interface IInstrument {
   language?: string; // For language-aware instruments like 'instructor'
 }
 
+export type ClaveDirection = '2-3' | '3-2';
+
 export interface IMachine {
   bpm: number;
   keyNote: number;
+  claveDirection: ClaveDirection;
   instruments: IInstrument[];
   flavor: 'Salsa' | 'Merengue';
 }

@@ -4,6 +4,10 @@ import { InstrumentPlayer } from './instrument-player';
 import { createMachine } from './machine';
 import { IInstrument, IMachine } from './machine-interfaces';
 
+// Programs are indexed in half-beats, so one bar of salsa is eight of them. Rotating a
+// clave-respecting program by a bar is what turns 2-3 around into 3-2.
+const SAMPLES_PER_BAR = 8;
+
 export interface IInstrumentSample {
   sampleName: string;
   velocity?: number;
@@ -81,17 +85,11 @@ export class BeatEngine {
         }),
 
         observe(this.machine, 'keyNote', () => {
-          if (this.playing) {
-            for (const instrument of this.machine.instruments) {
-              if (!instrument.keyedInstrument) {
-                continue;
-              }
-              const player = this.instrumentPlayers.get(instrument);
-              if (player) {
-                this.rescheduleInstrument(instrument, player);
-              }
-            }
-          }
+          this.rescheduleInstruments((instrument) => instrument.keyedInstrument);
+        }),
+
+        observe(this.machine, 'claveDirection', () => {
+          this.rescheduleInstruments((instrument) => instrument.respectsClave);
         }),
       );
     }
@@ -151,6 +149,18 @@ export class BeatEngine {
     }
   }
 
+  private rescheduleInstruments(matches: (instrument: IInstrument) => boolean) {
+    if (!this.playing) {
+      return;
+    }
+    for (const instrument of this.machine.instruments) {
+      const player = this.instrumentPlayers.get(instrument);
+      if (player && matches(instrument)) {
+        this.rescheduleInstrument(instrument, player);
+      }
+    }
+  }
+
   rescheduleInstrument(instrument: IInstrument, player: InstrumentPlayer) {
     player.reset();
     const sampleTime = this.beatTime / 2;
@@ -165,6 +175,9 @@ export class BeatEngine {
     const result: IInstrumentSample[] = [];
     if (instrument.enabled) {
       const program = instrument.programs[instrument.activeProgram];
+      if (instrument.respectsClave && this.machine.claveDirection === '3-2') {
+        sampleIndex += SAMPLES_PER_BAR;
+      }
       sampleIndex %= program.length;
       program.notes
         .filter((note) => note.index === sampleIndex)
