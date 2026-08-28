@@ -1,4 +1,4 @@
-import { FormControl, IconButton, Select, Slider } from '@mui/material';
+import { FormControl, IconButton, MenuItem, Select, Slider } from '@mui/material';
 import classnames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useState, useEffect, useRef } from 'react';
@@ -7,13 +7,37 @@ import styles from './css/instrument-tile.module.css';
 import SettingsIcon from '@mui/icons-material/Settings';
 import VolumeIcon from '@mui/icons-material/VolumeUp';
 
-interface IInstrumentTileProps {
-  instrument: IInstrument;
+export interface ILanguageOption {
+  value: string;
+  label: string;
 }
 
-export const InstrumentTile = observer(({ instrument }: IInstrumentTileProps) => {
+// Some instruments carry twenty-odd programs with titles far wider than a tile, so the
+// menu is bounded and scrolls rather than opening at the width of its longest entry.
+const MENU_PROPS = {
+  PaperProps: {
+    sx: {
+      maxHeight: 300,
+      maxWidth: 320,
+      bgcolor: 'rgba(24, 18, 14, 0.97)',
+      color: 'rgba(255, 255, 255, 0.95)',
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      '& .MuiMenuItem-root': { fontSize: 13 },
+      '& .Mui-selected': { backgroundColor: 'rgba(255, 201, 71, 0.2) !important' },
+    },
+  },
+};
+
+interface IInstrumentTileProps {
+  instrument: IInstrument;
+  languages?: ILanguageOption[];
+  language?: string;
+  onLanguageChange?: (language: string) => void;
+}
+
+export const InstrumentTile = observer((props: IInstrumentTileProps) => {
+  const { instrument, languages, language, onLanguageChange } = props;
   const [showSettings, setShowSettings] = useState(false);
-  const [showVolume, setShowVolume] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(instrument.volume);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -21,18 +45,17 @@ export const InstrumentTile = observer(({ instrument }: IInstrumentTileProps) =>
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowSettings(false);
-        setShowVolume(false);
       }
     };
 
-    if (showSettings || showVolume) {
+    if (showSettings) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showSettings, showVolume]);
+  }, [showSettings]);
 
   const toggle = () => {
     if (instrument.enabled) {
@@ -52,62 +75,56 @@ export const InstrumentTile = observer(({ instrument }: IInstrumentTileProps) =>
           onClick={toggle}
           style={{ backgroundImage: `url(assets/instruments/${instrument.id}.svg)` }}
         />
-        <div className={styles.tools}>
-          <IconButton
-            className={styles.iconButton}
-            size="small"
-            onClick={() => {
-              setShowSettings(!showSettings);
-              setShowVolume(false);
-            }}
-          >
-            <SettingsIcon className={classnames(showSettings && styles.active)} />
-          </IconButton>
-          <IconButton
-            className={styles.iconButton}
-            size="small"
-            onClick={() => {
-              setShowVolume(!showVolume);
-              setShowSettings(false);
-            }}
-          >
-            <VolumeIcon className={classnames(showVolume && styles.active)} />
-          </IconButton>
-        </div>
+        {languages && (
+          <div className={styles.tools}>
+            <IconButton className={styles.iconButton} size="small" onClick={() => setShowSettings(!showSettings)}>
+              <SettingsIcon className={classnames(showSettings && styles.active)} />
+            </IconButton>
+          </div>
+        )}
+        {showSettings && languages && (
+          <div className={styles.settingsPanel}>
+            <div className={styles.settingLabel}>Language</div>
+            <FormControl fullWidth size="small">
+              <Select native value={language ?? ''} onChange={(e) => onLanguageChange?.(String(e.target.value))}>
+                {languages.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+        )}
       </div>
       <div className={classnames(styles.bottom, styles.instrumentLabel)}>{instrument.title}</div>
-      {showVolume && (
-        <div className={styles.settingsPanel}>
-          <Slider
-            min={0}
-            max={1}
-            step={0.1}
-            size="small"
-            aria-label="Instrument volume"
-            value={instrument.volume}
-            onChange={(e, newValue) => {
-              instrument.volume = newValue as number;
-            }}
-          />
-        </div>
-      )}
-      {showSettings && (
-        <div className={styles.settingsPanel}>
-          <FormControl fullWidth size="small">
-            <Select
-              native
-              value={instrument.activeProgram + 1}
-              onChange={(e) => (instrument.activeProgram = parseInt(String(e.target.value), 10) - 1)}
-            >
-              {instrument.programs.map((program, index) => (
-                <option key={program.title} value={index + 1}>
-                  {program.title}
-                </option>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-      )}
+      <FormControl fullWidth size="small" className={styles.programSelect}>
+        <Select
+          value={instrument.activeProgram}
+          onChange={(e) => (instrument.activeProgram = Number(e.target.value))}
+          MenuProps={MENU_PROPS}
+        >
+          {instrument.programs.map((program, index) => (
+            <MenuItem key={program.title} value={index}>
+              {program.title}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <div className={styles.volume}>
+        <VolumeIcon className={styles.volumeIcon} />
+        <Slider
+          min={0}
+          max={1}
+          step={0.05}
+          size="small"
+          aria-label="Instrument volume"
+          value={instrument.volume}
+          onChange={(_event, newValue) => {
+            instrument.volume = newValue as number;
+          }}
+        />
+      </div>
       {/* filter is used by CSS to draw disabled instruments */}
       <svg height="0" width="0">
         <filter id="gray-overlay">

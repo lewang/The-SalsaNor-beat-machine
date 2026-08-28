@@ -38,13 +38,10 @@
 
 .tools {
   position: absolute;
-  bottom: 0;
+  top: 0;
   right: 0;
   display: flex;
   gap: 4px;
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  transform: translateY(8px);
   z-index: 10;
 }
 
@@ -78,23 +75,61 @@
 }
 
 .instrumentLabel {
-  opacity: 0;
-  transition: opacity ease 0.3s;
   text-align: center;
 }
 
-.container:hover .instrumentLabel,
-.container:hover .tools {
-  opacity: 1;
-  transform: translateY(0);
+.programSelect {
+  width: 100%;
+}
+
+.programSelect :global(.MuiSelect-select) {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 12px;
+  padding: 6px 24px 6px 8px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.programSelect :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.programSelect :global(.MuiSvgIcon-root) {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 0 2px;
+}
+
+.volume :global(.MuiSlider-root) {
+  color: #FFC947;
+}
+
+.volumeIcon {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px !important;
+}
+
+.settingLabel {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4px;
 }
 
 .settingsPanel {
   position: absolute;
-  bottom: 45px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px;
+  top: 40px;
+  right: 4px;
+  padding: 10px;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -102,8 +137,7 @@
   border-radius: 8px;
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  width: 90%;
-  max-width: 200px;
+  width: 168px;
   z-index: 100;
 }
 
@@ -122,11 +156,11 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(12px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 }
 
