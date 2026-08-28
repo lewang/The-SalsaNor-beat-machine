@@ -5,7 +5,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import StopIcon from '@mui/icons-material/Stop';
 
-import { IMachine } from '../engine/machine-interfaces';
+import { ClaveDirection, IMachine } from '../engine/machine-interfaces';
 import { useBeatEngine } from '../hooks/use-beat-engine';
 import { useWindowListener } from '../hooks/use-window-listener';
 import { GlassContainer, GlassButton, GlassSlider } from './ui';
@@ -17,6 +17,17 @@ import { IDefaultMachines } from './beat-machine-ui';
 export interface IBeatMachineUIGlassProps {
   machines: IDefaultMachines;
 }
+
+export const INSTRUCTOR_LANGUAGES = [
+  { value: '', label: 'English' },
+  { value: 'italian', label: 'Italiano' },
+  { value: 'spanish', label: 'Espanol' },
+  { value: 'french', label: 'Francais' },
+  { value: 'russian', label: 'Russkiy' },
+  { value: 'german', label: 'Deutsch' },
+];
+
+const KEY_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassProps) => {
   const { salsa, merengue } = machines;
@@ -47,6 +58,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
     }
   }, [engine, machine]);
 
+  const hasClave = machine.instruments.some((instrument) => instrument.respectsClave);
   const beatCount = machine.flavor === 'Merengue' ? 4 : 8;
   const beatDivider = machine.flavor === 'Merengue' ? 2 : 1;
   const beatIndex = engine?.playing ? Math.round(0.5 + ((engine.beat / beatDivider) % beatCount)) : 0;
@@ -125,36 +137,47 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
             />
           </div>
 
-          <div className={styles.flavorSelect}>
-            <GlassButton
-              variant={machine.flavor === 'Salsa' ? 'primary' : 'ghost'}
-              onClick={() => setMachine(observable(salsa))}
-            >
-              Salsa
-            </GlassButton>
-            <GlassButton
-              variant={machine.flavor === 'Merengue' ? 'primary' : 'ghost'}
-              onClick={() => setMachine(observable(merengue))}
-            >
-              Merengue
-            </GlassButton>
-          </div>
+          <div className={styles.settingSelects}>
+            <label className={styles.setting}>
+              <span className={styles.settingLabel}>Style</span>
+              <select
+                className={styles.settingDropdown}
+                value={machine.flavor}
+                onChange={(e) => setMachine(observable(e.target.value === 'Merengue' ? merengue : salsa))}
+              >
+                <option value="Salsa">Salsa</option>
+                <option value="Merengue">Merengue</option>
+              </select>
+            </label>
 
-          <div className={styles.languageSelect}>
-            <span className={styles.languageLabel}>🌐</span>
-            <select
-              value={instructorLanguage}
-              onChange={(e) => setInstructorLanguage(e.target.value)}
-              className={styles.languageDropdown}
-              title="Instructor Language"
-            >
-              <option value="">EN</option>
-              <option value="italian">IT</option>
-              <option value="spanish">ES</option>
-              <option value="french">FR</option>
-              <option value="russian">RU</option>
-              <option value="german">DE</option>
-            </select>
+            <label className={styles.setting}>
+              <span className={styles.settingLabel}>Key</span>
+              <select
+                className={styles.settingDropdown}
+                value={machine.keyNote}
+                onChange={(e) => (machine.keyNote = parseInt(e.target.value, 10))}
+              >
+                {KEY_NAMES.map((name, index) => (
+                  <option key={name} value={index}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {hasClave && (
+              <label className={styles.setting}>
+                <span className={styles.settingLabel}>Clave</span>
+                <select
+                  className={styles.settingDropdown}
+                  value={machine.claveDirection}
+                  onChange={(e) => (machine.claveDirection = e.target.value as ClaveDirection)}
+                >
+                  <option value="2-3">2-3</option>
+                  <option value="3-2">3-2</option>
+                </select>
+              </label>
+            )}
           </div>
         </div>
       </GlassContainer>
@@ -168,7 +191,12 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
       <div className={styles.instrumentGrid}>
         {machine.instruments.map((instrument) => (
           <GlassContainer key={instrument.id} className={styles.instrumentCard}>
-            <InstrumentTile instrument={instrument} />
+            <InstrumentTile
+              instrument={instrument}
+              languages={instrument.id === 'instructor' ? INSTRUCTOR_LANGUAGES : undefined}
+              language={instructorLanguage}
+              onLanguageChange={setInstructorLanguage}
+            />
           </GlassContainer>
         ))}
       </div>
