@@ -109,8 +109,7 @@ export default function Docs() {
 
             <h3>Quick Start</h3>
             <ol>
-              <li>Use the <Link href="/widget-generator">Widget Generator</Link> to create custom code</li>
-              <li>Copy the generated HTML</li>
+              <li>Copy one of the snippets below</li>
               <li>Paste it into your website</li>
             </ol>
 
@@ -215,7 +214,6 @@ export default function Docs() {
               <li><strong>Clave:</strong> Pattern 0 = Son Clave, Pattern 1 = Rumba Clave</li>
               <li><strong>Cowbell:</strong> Pattern 0 = Complex, Pattern 1 = Simple</li>
             </ul>
-            <p className={styles.note}>💡 Use the <a href="/widget-generator">Widget Generator</a> to see all available patterns for each instrument</p>
           </section>
 
           {/* Inline Placement Examples */}
@@ -346,7 +344,6 @@ export default function Docs() {
             <h2>🔗 Resources</h2>
             <ul>
               <li><Link href="/">Main App</Link> - Full Beat Machine experience</li>
-              <li><Link href="/widget-generator">Widget Generator</Link> - Create custom embed code</li>
               <li><Link href="/widget-demo">Widget Demo</Link> - Live examples of widgets</li>
               <li><a href="https://github.com/urish/beat-machine" target="_blank" rel="noopener">GitHub Repository</a> - Source code</li>
             </ul>

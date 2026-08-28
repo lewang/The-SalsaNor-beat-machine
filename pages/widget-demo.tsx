@@ -62,7 +62,6 @@ export default function WidgetDemo() {
           <nav style={navStyle}>
             <a href="/" style={navLinkStyle}>🏠 Main App</a>
             <a href="/docs" style={navLinkStyle}>📚 Documentation</a>
-            <a href="/widget-generator" style={navLinkStyle}>🛠️ Widget Generator</a>
           </nav>
 
           <h1 style={titleStyle}>🎵 SalsaNor Beat Widget Demo</h1>
@@ -177,10 +176,7 @@ export default function WidgetDemo() {
           <div style={footerStyle}>
             <p style={{ margin: '1rem 0' }}>
               <strong>Need help?</strong> Check out the{' '}
-              <a href="/docs" style={linkStyle}>full documentation</a>
-              {' '}or use the{' '}
-              <a href="/widget-generator" style={linkStyle}>widget generator</a>
-              {' '}to create custom embed code.
+              <a href="/docs" style={linkStyle}>full documentation</a>.
             </p>
             <p style={{ margin: '1rem 0', fontSize: '0.875rem', opacity: 0.7 }}>
               Powered by SalsaNor Beat · <a href="https://beat.salsanor.no" style={linkStyle}>beat.salsanor.no</a>

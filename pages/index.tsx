@@ -46,9 +46,6 @@ export default function Home({ machines }: IHomeProps) {
           <a href="/docs" className={styles.link}>
             📚 Documentation
           </a>
-          <a href="/widget-generator" className={styles.link}>
-            🛠️ Widget Generator
-          </a>
         </div>
 
         <footer className={styles.footer}>
