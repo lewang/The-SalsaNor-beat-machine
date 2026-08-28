@@ -23,8 +23,8 @@ const nextConfig = {
     includePaths: [path.join(__dirname, 'styles')],
   },
 
-  // Optional: uncomment if deploying to a subdirectory
-  // basePath: '/beat-machine',
+  // Set NEXT_PUBLIC_BASE_PATH when the export is served under a path prefix rather than at the site root.
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
 }
 
 export default nextConfig;

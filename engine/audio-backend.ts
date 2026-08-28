@@ -12,7 +12,7 @@ export class AudioBackend {
   private _context?: AudioContext;
   private audioFormat: string;
 
-  constructor(private baseUrl: string = '') {
+  constructor(private baseUrl: string = process.env.NEXT_PUBLIC_BASE_PATH ?? '') {
     this.ready = false;
     const hasWebM = typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported('audio/webm;codecs="vorbis"');
     const audioPath = hasWebM ? 'assets/audio/main.webm' : 'assets/audio/main.mp3';
