@@ -49,6 +49,7 @@ const flashClass = (ms: number): TapClass => (Math.abs(ms) <= 25 ? 'on' : Math.a
 
 export const CalibrateScreen = ({ engine, stored, calibration, onChange, onBack }: ICalibrateScreenProps) => {
   const [bpm, setBpm] = useState(120);
+  const [bpmText, setBpmText] = useState('120');
   const [running, setRunning] = useState(false);
   const [mode, setMode] = useState<TapSource | null>(null);
   const [last, setLast] = useState<number | null>(null);
@@ -220,6 +221,15 @@ export const CalibrateScreen = ({ engine, stored, calibration, onChange, onBack 
 
   useTapInput(true, handleTap);
 
+  // Typed freely and settled on the way out: clamping every keystroke makes the field impossible to type in,
+  // since the first digit of 150 is already below the minimum.
+  const commitBpm = () => {
+    const typed = Number(bpmText);
+    const next = Number.isFinite(typed) && bpmText.trim() !== '' ? Math.max(40, Math.min(200, Math.round(typed))) : bpm;
+    setBpm(next);
+    setBpmText(String(next));
+  };
+
   const setManual = (src: TapSource) => {
     const raw = draft[src];
     const value = raw === undefined || raw === '' ? NaN : Number(raw);
@@ -320,12 +330,20 @@ export const CalibrateScreen = ({ engine, stored, calibration, onChange, onBack 
             <input
               className={styles.numberInput}
               type="number"
+              inputMode="numeric"
               min={40}
               max={200}
               step={5}
-              value={bpm}
+              value={bpmText}
               disabled={running}
-              onChange={(event) => setBpm(Math.max(40, Math.min(200, Number(event.target.value) || 120)))}
+              onChange={(event) => setBpmText(event.target.value)}
+              onBlur={commitBpm}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  event.currentTarget.blur();
+                }
+              }}
             />
           </label>
           <button

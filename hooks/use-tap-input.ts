@@ -19,6 +19,12 @@ export function useTapInput(active: boolean, onTap: (perfMs: number, src: TapSou
       if (event.repeat || !TAP_KEYS.includes(event.key)) {
         return;
       }
+      // A space typed into a field is a space, not a tap. The target is not always an element -- an event
+      // dispatched at the window or the document has no closest() to ask.
+      const target = event.target;
+      if (target instanceof Element && target.closest('input, select, textarea, [contenteditable]')) {
+        return;
+      }
       // Space would scroll the page and would re-press whichever control still holds focus.
       event.preventDefault();
       handler.current(event.timeStamp, 'key');
