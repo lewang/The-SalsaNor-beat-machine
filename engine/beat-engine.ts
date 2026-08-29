@@ -3,7 +3,7 @@ import { AudioBackend } from './audio-backend';
 import { InstrumentPlayer } from './instrument-player';
 import { createMachine } from './machine';
 import { IInstrument, IMachine } from './machine-interfaces';
-import { INSTRUCTOR_ID, VoiceRegime, voiceSoundsAt } from './drill';
+import { INSTRUCTOR_ID, IVoiceCycle, voiceSoundsAt } from './drill';
 
 // Programs are indexed in half-beats, so one bar of salsa is eight of them. Rotating a
 // clave-respecting program by a bar is what turns 2-3 around into 3-2.
@@ -25,8 +25,8 @@ export class BeatEngine {
   interval: number | null = null;
   _machine: IMachine = createMachine();
   beat = 0;
-  /** Set while a drill session owns the instructor; null leaves the tile's own mute in charge. */
-  voiceRegime: VoiceRegime | null = null;
+  /** Set while a drill session is holding the instructor back; null leaves the tile in sole charge. */
+  voiceCycle: IVoiceCycle | null = null;
 
   constructor(private mixer: AudioBackend) {
     makeAutoObservable(this);
@@ -190,7 +190,7 @@ export class BeatEngine {
 
   private instrumentNotes(instrument: IInstrument, sampleIndex: number): IInstrumentSample[] {
     const result: IInstrumentSample[] = [];
-    if (this.voiceRegime && instrument.id === INSTRUCTOR_ID && !voiceSoundsAt(this.voiceRegime, sampleIndex)) {
+    if (this.voiceCycle && instrument.id === INSTRUCTOR_ID && !voiceSoundsAt(this.voiceCycle, sampleIndex)) {
       return result;
     }
     if (instrument.enabled) {

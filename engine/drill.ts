@@ -9,10 +9,17 @@ const SAMPLES_PER_BEAT = 2;
 export const ON_BEATS = 1 / 8;
 export const CLOSE_BEATS = 1 / 2;
 
-/** How long the voice stays on, and then off, under the alternating regime. */
-export const ALTERNATION_BEATS = 16;
+/** A bar is four beats, so the eight-count the instructor calls spans two of them, as the clave does. */
+export const BAR_BEATS = 4;
+const SAMPLES_PER_BAR = BAR_BEATS * SAMPLES_PER_BEAT;
 
-export type VoiceRegime = 'on' | 'off' | 'alternating';
+/** How long the instructor calls, and then holds off, before repeating. */
+export interface IVoiceCycle {
+  /** null calls throughout. */
+  onBars: number | null;
+  /** null never holds off. */
+  offBars: number | null;
+}
 export type TapClass = 'on' | 'close' | 'stray';
 export type TapSource = 'key' | 'pad';
 
@@ -91,15 +98,24 @@ export function classifyTap(errBeats: number): TapClass {
  * notes are scheduled up to ten seconds ahead: a flag flipped in wall-clock time would smear each switch
  * across seconds of already-queued audio, and would drift out of phase with the eight-count besides.
  */
-export function voiceSoundsAt(regime: VoiceRegime, sampleIndex: number): boolean {
-  if (regime === 'on') {
+export function voiceSoundsAt(cycle: IVoiceCycle, sampleIndex: number): boolean {
+  if (cycle.onBars === null || cycle.offBars === null) {
     return true;
   }
-  if (regime === 'off') {
-    return false;
+  const on = cycle.onBars * SAMPLES_PER_BAR;
+  const period = on + cycle.offBars * SAMPLES_PER_BAR;
+  if (period <= 0) {
+    return true;
   }
-  const leg = Math.floor(sampleIndex / (ALTERNATION_BEATS * SAMPLES_PER_BEAT));
-  return leg % 2 === 0;
+  return (((sampleIndex % period) + period) % period) < on;
+}
+
+export function voiceAlternates(cycle: IVoiceCycle): boolean {
+  return cycle.onBars !== null && cycle.offBars !== null;
+}
+
+export function describeVoice(cycle: IVoiceCycle): string {
+  return voiceAlternates(cycle) ? cycle.onBars + ' on / ' + cycle.offBars + ' off' : 'always';
 }
 
 export function gradeTap(targets: ITarget[], cycleBeats: number, beat: number, msPerBeat: number): ITap | null {
@@ -244,7 +260,7 @@ export function describeMachine(snapshot: IMachineSnapshot): string[] {
 export interface IDrillSettings {
   /** Which pattern to tap. Its own setting: the instructor is left playing whatever the machine screen says. */
   programIndex: number;
-  regime: VoiceRegime;
+  voice: IVoiceCycle;
   /** null runs until stopped by hand. */
   seconds: number | null;
 }
@@ -268,15 +284,17 @@ export function sessionLengthLabel(seconds: number | null): string {
 }
 
 /**
- * What the drill does to the instructor while a session runs. It can only take the voice away: an instructor
- * switched off on the machine screen stays off under every regime, and its own program is never touched.
+ * The drill can only take the instructor's voice away for a stretch. One switched off on the machine screen
+ * stays off whatever is chosen here, and its own program is never touched.
  */
-export const REGIME_LABELS: { value: VoiceRegime; label: string; detail: string }[] = [
-  { value: 'on', label: 'Leave it be', detail: 'the instructor plays whatever you set it to' },
-  { value: 'off', label: 'Silence it', detail: 'muted for the session, whatever it was set to' },
-  {
-    value: 'alternating',
-    label: 'Alternating',
-    detail: ALTERNATION_BEATS + ' beats through, ' + ALTERNATION_BEATS + ' muted, repeating',
-  },
+export const VOICE_ON_OPTIONS: { value: number | null; label: string }[] = [
+  { value: null, label: 'always' },
+  { value: 2, label: '2-bar' },
+  { value: 4, label: '4-bar' },
+];
+
+export const VOICE_OFF_OPTIONS: { value: number | null; label: string }[] = [
+  { value: null, label: 'never' },
+  { value: 2, label: '2-bar' },
+  { value: 4, label: '4-bar' },
 ];

@@ -58,7 +58,11 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   const [machine, setMachine] = useState(observable(salsa));
   const [instructorLanguage, setInstructorLanguage] = useState<string>('');
   const [screen, setScreen] = useState<'machine' | 'setup' | 'drill' | 'summary' | 'calibrate'>('machine');
-  const [settings, setSettings] = useState<IDrillSettings>({ programIndex: 1, regime: 'on', seconds: 300 });
+  const [settings, setSettings] = useState<IDrillSettings>({
+    programIndex: 1,
+    voice: { onBars: null, offBars: null },
+    seconds: 300,
+  });
   const [calibrationStore, setCalibrationStore] = useState<IStoredCalibration>({ history: [], manual: {} });
   const [drillHistory, setDrillHistory] = useState<IDrillRun[]>([]);
   const [lastRun, setLastRun] = useState<IDrillRun | null>(null);

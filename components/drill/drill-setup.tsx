@@ -1,13 +1,14 @@
+import classnames from 'classnames';
 import { GlassButton, GlassContainer } from '../ui';
 import { ICalibrationValue } from '../../engine/calibration';
 import {
   IDrillSettings,
   INSTRUCTOR_ID,
-  REGIME_LABELS,
   SESSION_SECONDS,
   sessionLengthLabel,
+  VOICE_OFF_OPTIONS,
+  VOICE_ON_OPTIONS,
   TapSource,
-  VoiceRegime,
 } from '../../engine/drill';
 import { IMachine } from '../../engine/machine-interfaces';
 import styles from './drill.module.css';
@@ -32,6 +33,7 @@ export const DrillSetup = ({
   onBack,
 }: IDrillSetupProps) => {
   const instructor = machine.instruments.find((instrument) => instrument.id === INSTRUCTOR_ID);
+  const instructorOn = Boolean(instructor?.enabled);
   const measured = (['key', 'pad'] as TapSource[]).filter((src) => calibration[src]);
 
   if (!instructor) {
@@ -79,22 +81,55 @@ export const DrillSetup = ({
           </div>
         </div>
 
-        <div className={styles.field}>
+        <div className={classnames(styles.field, !instructorOn && styles.fieldOff)}>
           <span className={styles.fieldLabel}>Instructor</span>
           <div className={styles.choices}>
-            {REGIME_LABELS.map((regime) => (
-              <button
-                key={regime.value}
-                type="button"
-                className={styles.choice}
-                aria-pressed={settings.regime === regime.value}
-                onClick={() => onChange({ ...settings, regime: regime.value as VoiceRegime })}
+            <label className={styles.pair}>
+              <span className={styles.pairLabel}>on</span>
+              <select
+                className={styles.select}
+                disabled={!instructorOn}
+                value={String(settings.voice.onBars)}
+                onChange={(event) =>
+                  onChange({
+                    ...settings,
+                    voice: { ...settings.voice, onBars: event.target.value === 'null' ? null : Number(event.target.value) },
+                  })
+                }
               >
-                <span>{regime.label}</span>
-                <small>{regime.detail}</small>
-              </button>
-            ))}
+                {VOICE_ON_OPTIONS.map((option) => (
+                  <option key={String(option.value)} value={String(option.value)}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={styles.pair}>
+              <span className={styles.pairLabel}>off</span>
+              <select
+                className={styles.select}
+                disabled={!instructorOn}
+                value={String(settings.voice.offBars)}
+                onChange={(event) =>
+                  onChange({
+                    ...settings,
+                    voice: { ...settings.voice, offBars: event.target.value === 'null' ? null : Number(event.target.value) },
+                  })
+                }
+              >
+                {VOICE_OFF_OPTIONS.map((option) => (
+                  <option key={String(option.value)} value={String(option.value)}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
+          <span className={styles.note}>
+            {instructorOn
+              ? 'How long the count is called for, and how long it then holds off, repeating. A bar is four beats, so the eight-count spans two of them.'
+              : 'The instructor is switched off on the machine screen, so there is no voice to hold back. Turn it on there to use this.'}
+          </span>
         </div>
 
         <div className={styles.field}>

@@ -56,14 +56,23 @@ export function clearCalibration() {
   }
 }
 
-/** Session length moved from minutes to seconds once half a minute became an option. */
+/**
+ * Session length moved from minutes to seconds once half a minute became an option, and the three named
+ * regimes became an on/off cycle in bars. The old alternating regime was sixteen beats each way, which is
+ * four bars; the two that did not alternate both become a voice that is never held back.
+ */
 export function loadDrillHistory(): IDrillRun[] {
   return read<IDrillRun[]>(DRILL_HISTORY_KEY, []).map((run) => {
-    const legacy = (run.settings as { minutes?: number | null }).minutes;
-    if (run.settings.seconds === undefined && legacy !== undefined) {
-      return { ...run, settings: { ...run.settings, seconds: legacy === null ? null : legacy * 60 } };
+    const legacy = run.settings as { minutes?: number | null; regime?: string };
+    const settings = { ...run.settings };
+    if (settings.seconds === undefined && legacy.minutes !== undefined) {
+      settings.seconds = legacy.minutes === null ? null : legacy.minutes * 60;
     }
-    return run;
+    if (settings.voice === undefined) {
+      settings.voice =
+        legacy.regime === 'alternating' ? { onBars: 4, offBars: 4 } : { onBars: null, offBars: null };
+    }
+    return { ...run, settings };
   });
 }
 

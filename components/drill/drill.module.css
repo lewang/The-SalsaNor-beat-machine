@@ -357,3 +357,37 @@
   gap: 10px;
   white-space: nowrap;
 }
+
+/* A labelled dropdown, for settings that are a value rather than a choice between named modes. */
+.pair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pairLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  min-width: 2em;
+}
+
+.select {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.95);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* A setting with nothing to act on: shown so it is clear it exists, dimmed so it is clear it is inert. */
+.fieldOff .pairLabel,
+.fieldOff .select {
+  opacity: 0.45;
+}
+
+.fieldOff .select {
+  cursor: not-allowed;
+}

@@ -12,9 +12,10 @@ import {
   ITap,
   programCycleBeats,
   programTargets,
+  IVoiceCycle,
   summarizeTaps,
   TapSource,
-  VoiceRegime,
+  voiceAlternates,
   voiceSoundsAt,
 } from '../../engine/drill';
 import { IMachine } from '../../engine/machine-interfaces';
@@ -58,11 +59,11 @@ function playClick(context: AudioContext | undefined) {
 }
 
 /** Reads the engine's beat every frame, so it lives apart from the screen that only changes when you tap. */
-const VoiceLeg = observer(({ engine, regime }: { engine: BeatEngine; regime: VoiceRegime }) => {
-  if (regime !== 'alternating') {
+const VoiceLeg = observer(({ engine, voice }: { engine: BeatEngine; voice: IVoiceCycle }) => {
+  if (!voiceAlternates(voice)) {
     return null;
   }
-  const calling = engine.playing && voiceSoundsAt(regime, Math.max(0, Math.floor(engine.beat * 2)));
+  const calling = engine.playing && voiceSoundsAt(voice, Math.max(0, Math.floor(engine.beat * 2)));
   return (
     <span className={classnames(styles.voiceLeg, calling ? styles.calling : styles.silent)}>
       {calling ? 'calling' : 'silent'}
@@ -93,13 +94,13 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
   // The instructor is left alone: the regime can only take its voice away, never switch it on or change what
   // it is playing. The pattern being tapped is a setting of the drill, not of that instrument.
   useEffect(() => {
-    engine.voiceRegime = settings.regime;
+    engine.voiceCycle = settings.voice;
     engine.stop();
     engine.play();
     startedAt.current = performance.now();
     return () => {
       engine.stop();
-      engine.voiceRegime = null;
+      engine.voiceCycle = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -154,7 +155,7 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
     <div className={styles.screen}>
       <div className={styles.head}>
         <h2 className={styles.title}>
-          <span className={styles.mono}>{program?.title ?? '—'}</span> <VoiceLeg engine={engine} regime={settings.regime} />
+          <span className={styles.mono}>{program?.title ?? '—'}</span> <VoiceLeg engine={engine} voice={settings.voice} />
         </h2>
         <div className={styles.actions}>
           <span className={styles.clock}>{remaining === null ? clock(elapsedMs) : clock(remaining)}</span>

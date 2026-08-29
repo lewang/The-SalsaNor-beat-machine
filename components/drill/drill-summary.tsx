@@ -1,4 +1,10 @@
-import { calibrationHint, describeMachine, IDrillRun, REGIME_LABELS, sessionLengthLabel } from '../../engine/drill';
+import {
+  calibrationHint,
+  describeMachine,
+  describeVoice,
+  IDrillRun,
+  sessionLengthLabel,
+} from '../../engine/drill';
 import { GlassButton, GlassContainer } from '../ui';
 import styles from './drill.module.css';
 
@@ -12,7 +18,6 @@ interface IDrillSummaryProps {
 }
 
 const signed = (ms: number) => (ms < 0 ? '−' : '+') + Math.round(Math.abs(ms));
-const regimeLabel = (value: string) => REGIME_LABELS.find((regime) => regime.value === value)?.label ?? value;
 const when = (at: number) => {
   const date = new Date(at);
   return (
@@ -31,7 +36,7 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBac
     <div className={styles.screen}>
       <div className={styles.head}>
         <h2 className={styles.title}>
-          <span className={styles.mono}>{run.patternTitle}</span> — {regimeLabel(run.settings.regime)},{' '}
+          <span className={styles.mono}>{run.patternTitle}</span> — voice {describeVoice(run.settings.voice)},{' '}
           {sessionLengthLabel(run.settings.seconds)}
         </h2>
         <div className={styles.actions}>
@@ -109,7 +114,7 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBac
                   <td>{when(entry.at)}</td>
                   <td className={styles.mono}>{entry.patternTitle}</td>
                   <td>{sessionLengthLabel(entry.settings.seconds)}</td>
-                  <td>{regimeLabel(entry.settings.regime)}</td>
+                  <td>{describeVoice(entry.settings.voice)}</td>
                   <td className="num">{entry.summary.n}</td>
                   <td className="num">
                     {entry.summary.onPercent === null ? '—' : Math.round(entry.summary.onPercent) + '%'}
