@@ -8,17 +8,17 @@ export function mixStateOf(enabled: boolean[]): MixState {
 }
 
 /**
- * All on, then all off, then back to the mix you last had by hand. A remembered mix that is no longer actually
- * a mix is no use as a third state, so it is skipped rather than repeating one of the other two.
+ * Your mix, then all off, then all on, and round again. A remembered mix that is no longer actually a mix is
+ * no use as a third state, so it is skipped rather than repeating one of the other two.
  */
 export function nextMix(enabled: boolean[], remembered: boolean[] | null): boolean[] {
   const state = mixStateOf(enabled);
-  if (state === 'all') {
+  if (state === 'mixed') {
     return enabled.map(() => false);
   }
-  if (state === 'mixed') {
+  if (state === 'none') {
     return enabled.map(() => true);
   }
   const usable = remembered && remembered.length === enabled.length && mixStateOf(remembered) === 'mixed';
-  return usable ? [...remembered] : enabled.map(() => true);
+  return usable ? [...remembered] : enabled.map(() => false);
 }
