@@ -425,7 +425,7 @@
   flex: 1;
   min-width: 0;
   display: grid;
-  grid-template-columns: 1.2em 15ch 14ch 30ch minmax(0, 1fr);
+  grid-template-columns: 1.2em minmax(0, 15ch) minmax(0, 14ch) minmax(0, 30ch) minmax(0, 1fr);
   gap: 14px;
   align-items: baseline;
   padding: 11px 6px;
@@ -516,6 +516,27 @@
   flex-direction: column;
   gap: 14px;
   padding: 4px 6px 20px 30px;
+}
+
+/* Too narrow for five columns: the cells flow onto as many lines as they need instead of pushing the page
+   sideways. Alignment down the list is worth less than the row fitting on the screen. */
+@media (max-width: 760px) {
+  .sessionHead {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+
+  .sessionWhen,
+  .sessionPattern,
+  .sessionSpec,
+  .sessionRig {
+    flex: none;
+  }
+
+  .sessionBody {
+    padding-left: 6px;
+  }
 }
 
 /* The rig a run was played against, one instrument to a line and its programs in a column of their own. */

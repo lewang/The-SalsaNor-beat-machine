@@ -376,15 +376,15 @@
 @mixin responsive-grid($columns-desktop: 3, $columns-tablet: 2, $columns-mobile: 1) {
   display: grid;
   gap: $grid-gap-mobile;
-  grid-template-columns: repeat($columns-mobile, 1fr);
+  grid-template-columns: repeat($columns-mobile, minmax(0, 1fr));
   
   @include tablet {
     gap: $grid-gap;
-    grid-template-columns: repeat($columns-tablet, 1fr);
+    grid-template-columns: repeat($columns-tablet, minmax(0, 1fr));
   }
   
   @include desktop {
-    grid-template-columns: repeat($columns-desktop, 1fr);
+    grid-template-columns: repeat($columns-desktop, minmax(0, 1fr));
   }
 }
 
