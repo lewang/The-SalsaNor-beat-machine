@@ -21,32 +21,8 @@
   flex-wrap: wrap;
 }
 
-.bpmControl {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem; // $spacing-3
-  flex: 1 1 280px;
-  max-width: 30rem;
-}
-
-.bpmLabel {
-  font-size: clamp(0.75rem, 0.5vw + 0.25rem, 0.875rem);
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.bpmValue {
-  font-weight: 600;
-  color: var(--color-golden);
-  min-width: 3ch;
-  text-align: right;
-}
-
-.bpmSlider {
-  flex: 1;
-}
-
 .settingSelects {
+  margin-left: auto;
   display: flex;
   gap: 0.625rem; // $spacing-2.5
   align-items: flex-end;
@@ -64,6 +40,23 @@
   text-transform: uppercase;
   color: var(--text-muted);
   padding-left: 2px;
+}
+
+/* Matches the dropdowns so the tempo reads as one control with the preset beside it. */
+.bpmInput {
+  width: 4.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  padding: 0.375rem 0.5rem;
+
+  &:focus {
+    outline: 2px solid var(--color-golden);
+    outline-offset: 2px;
+  }
 }
 
 .settingDropdown {

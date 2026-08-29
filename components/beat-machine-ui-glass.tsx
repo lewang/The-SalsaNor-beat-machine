@@ -7,7 +7,7 @@ import StopIcon from '@mui/icons-material/Stop';
 import { ClaveDirection, IMachine } from '../engine/machine-interfaces';
 import { useBeatEngine } from '../hooks/use-beat-engine';
 import { useWindowListener } from '../hooks/use-window-listener';
-import { GlassContainer, GlassButton, GlassSlider } from './ui';
+import { GlassContainer, GlassButton } from './ui';
 import { BeatIndicator } from './beat-indicator';
 import { InstrumentTile } from './instrument-tile';
 import styles from './beat-machine-ui-glass.module.scss';
@@ -56,6 +56,10 @@ export const INSTRUCTOR_LANGUAGES = [
 
 const KEY_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
+const BPM_PRESETS = [80, 120, 160, 180, 200];
+const BPM_MIN = 60;
+const BPM_MAX = 250;
+
 /** Enabling has to restore the gain as well as the flag, the same as a tile's own toggle does. */
 function applyMixIds(machine: IMachine, ids: string[] | undefined) {
   if (!ids) {
@@ -80,6 +84,8 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   const [lastRun, setLastRun] = useState<IDrillRun | null>(null);
   const [tunedAs, setTunedAs] = useState<IMachineSnapshot | null>(null);
   const [savedMixes, setSavedMixes] = useState<Record<string, string[]>>({});
+  const [customBpm, setCustomBpm] = useState(false);
+  const [bpmText, setBpmText] = useState('');
   const allInstruments = useRef<HTMLInputElement>(null);
 
   // Both stores are per-browser, so they can only be read once there is a browser to read them from.
@@ -193,6 +199,18 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
     }
   }, [engine, machine]);
 
+  // Typed freely and settled on the way out: clamping each keystroke makes the field impossible to type in.
+  const showCustomBpm = customBpm || !BPM_PRESETS.includes(machine.bpm);
+  const commitBpm = () => {
+    const typed = Number(bpmText);
+    const next =
+      Number.isFinite(typed) && bpmText.trim() !== ''
+        ? Math.max(BPM_MIN, Math.min(BPM_MAX, Math.round(typed)))
+        : machine.bpm;
+    machine.bpm = next;
+    setBpmText(String(next));
+  };
+
   const hasClave = machine.instruments.some((instrument) => instrument.respectsClave);
   const defaultMix = (machine.flavor === 'Merengue' ? merengue : salsa).instruments.map(
     (instrument) => instrument.enabled,
@@ -236,13 +254,18 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
       if (screen !== 'machine') {
         return;
       }
+      // A digit typed into the tempo box is part of a number, not a request to mute the third instrument.
+      const target = event.target;
+      if (target instanceof Element && target.closest('input, select, textarea, [contenteditable]')) {
+        return;
+      }
       switch (event.key) {
         case '+':
         case '=':
-          machine.bpm = Math.min(250, machine.bpm + 5);
+          machine.bpm = Math.min(BPM_MAX, machine.bpm + 5);
           break;
         case '-':
-          machine.bpm = Math.max(80, machine.bpm - 5);
+          machine.bpm = Math.max(BPM_MIN, machine.bpm - 5);
           break;
         case 'k':
           machine.keyNote = (machine.keyNote + 7) % 12;
@@ -339,20 +362,54 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
             Drill
           </GlassButton>
           
-          <div className={styles.bpmControl}>
-            <span className={styles.bpmLabel}>BPM:</span>
-            <span className={styles.bpmValue}>{machine.bpm}</span>
-            <GlassSlider
-              value={machine.bpm}
-              min={80}
-              max={200}
-              step={5}
-              onChange={(value) => (machine.bpm = value)}
-              className={styles.bpmSlider}
-            />
-          </div>
-
           <div className={styles.settingSelects}>
+            <label className={styles.setting}>
+              <span className={styles.settingLabel}>BPM</span>
+              <select
+                className={styles.settingDropdown}
+                value={showCustomBpm ? 'custom' : String(machine.bpm)}
+                onChange={(e) => {
+                  if (e.target.value === 'custom') {
+                    setBpmText(String(machine.bpm));
+                    setCustomBpm(true);
+                  } else {
+                    machine.bpm = parseInt(e.target.value, 10);
+                    setCustomBpm(false);
+                  }
+                }}
+              >
+                {BPM_PRESETS.map((preset) => (
+                  <option key={preset} value={preset}>
+                    {preset}
+                  </option>
+                ))}
+                <option value="custom">custom</option>
+              </select>
+            </label>
+
+            {showCustomBpm && (
+              <label className={styles.setting}>
+                <span className={styles.settingLabel}>&nbsp;</span>
+                <input
+                  className={styles.bpmInput}
+                  type="number"
+                  inputMode="numeric"
+                  min={BPM_MIN}
+                  max={BPM_MAX}
+                  aria-label="Beats per minute"
+                  value={bpmText}
+                  onChange={(e) => setBpmText(e.target.value)}
+                  onBlur={commitBpm}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.currentTarget.blur();
+                    }
+                  }}
+                />
+              </label>
+            )}
+
             <label className={styles.setting}>
               <span className={styles.settingLabel}>Style</span>
               <select
