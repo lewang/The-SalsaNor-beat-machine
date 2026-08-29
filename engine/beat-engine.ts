@@ -160,6 +160,8 @@ export class BeatEngine {
       const newPlayer = new InstrumentPlayer(context, instrument);
       this.machineDisposers.push(
         observe(instrument, 'activeProgram', () => this.rescheduleInstrument(instrument, newPlayer)),
+        // Without this the counts already queued keep speaking the old language for as long as the lookahead.
+        observe(instrument, 'language', () => this.rescheduleInstrument(instrument, newPlayer)),
       );
       this.instrumentPlayers.set(instrument, newPlayer);
       return newPlayer;

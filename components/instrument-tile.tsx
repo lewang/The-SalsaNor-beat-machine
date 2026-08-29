@@ -42,7 +42,13 @@ export const InstrumentTile = observer((props: IInstrumentTileProps) => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      // A menu renders in a portal on document.body, so a click on one of its items looks like a click outside
+      // the tile. Closing the panel there unmounts the select before it can report what was chosen.
+      const target = event.target;
+      if (target instanceof Element && target.closest('.MuiPopover-root, .MuiModal-root')) {
+        return;
+      }
+      if (containerRef.current && !containerRef.current.contains(target as Node)) {
         setShowSettings(false);
       }
     };
@@ -88,7 +94,10 @@ export const InstrumentTile = observer((props: IInstrumentTileProps) => {
             <FormControl fullWidth size="small">
               <Select
                 value={language ?? ''}
-                onChange={(e) => onLanguageChange?.(String(e.target.value))}
+                onChange={(e) => {
+                  onLanguageChange?.(String(e.target.value));
+                  setShowSettings(false);
+                }}
                 MenuProps={MENU_PROPS}
               >
                 {languages.map((option) => (

@@ -201,7 +201,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   useEffect(() => {
     const instructor = machine.instruments.find(i => i.id === 'instructor');
     if (instructor) {
-      instructor.language = instructorLanguage || undefined;
+      instructor.language = instructorLanguage;
       localStorage.setItem('beat-machine-instructor-lang', instructorLanguage);
     }
   }, [instructorLanguage, machine]);

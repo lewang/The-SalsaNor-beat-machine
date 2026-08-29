@@ -50,6 +50,9 @@ export class MachineXMLLoader {
       leftHandPitchOffset: parseInt(childValue('leftHandPitchOffset', '0'), 10),
       volume: parseFloat(childValue('volume', '1.0')),
       unmutedVolume: parseFloat(childValue('volume', '1.0')),
+      // Declared even though no machine sets it, so it is observable from the start and a change can be heard.
+      // Empty rather than undefined: the machines are serialised into the page, and undefined does not survive.
+      language: '',
     };
 
     const programs = children.filter((node) => node.localName === 'programs')[0];
