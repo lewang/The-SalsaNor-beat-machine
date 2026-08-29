@@ -38,7 +38,6 @@ interface IInstrumentTileProps {
 export const InstrumentTile = observer((props: IInstrumentTileProps) => {
   const { instrument, languages, language, onLanguageChange } = props;
   const [showSettings, setShowSettings] = useState(false);
-  const [previousVolume, setPreviousVolume] = useState(instrument.volume);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,12 +56,13 @@ export const InstrumentTile = observer((props: IInstrumentTileProps) => {
     };
   }, [showSettings]);
 
+  // Muting has to zero the gain as well as clear the enabled flag: notes are scheduled up to
+  // ten seconds ahead, and those are already on their way to the speakers.
   const toggle = () => {
     if (instrument.enabled) {
-      setPreviousVolume(instrument.volume);
       instrument.volume = 0;
-    } else if (previousVolume > 0) {
-      instrument.volume = previousVolume;
+    } else {
+      instrument.volume = instrument.unmutedVolume;
     }
     instrument.enabled = !instrument.enabled;
   };
@@ -86,11 +86,15 @@ export const InstrumentTile = observer((props: IInstrumentTileProps) => {
           <div className={styles.settingsPanel}>
             <div className={styles.settingLabel}>Language</div>
             <FormControl fullWidth size="small">
-              <Select native value={language ?? ''} onChange={(e) => onLanguageChange?.(String(e.target.value))}>
+              <Select
+                value={language ?? ''}
+                onChange={(e) => onLanguageChange?.(String(e.target.value))}
+                MenuProps={MENU_PROPS}
+              >
                 {languages.map((option) => (
-                  <option key={option.value} value={option.value}>
+                  <MenuItem key={option.value} value={option.value}>
                     {option.label}
-                  </option>
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -122,6 +126,9 @@ export const InstrumentTile = observer((props: IInstrumentTileProps) => {
           value={instrument.volume}
           onChange={(_event, newValue) => {
             instrument.volume = newValue as number;
+            if (instrument.volume > 0) {
+              instrument.unmutedVolume = instrument.volume;
+            }
           }}
         />
       </div>

@@ -49,6 +49,7 @@ export class MachineXMLLoader {
       playBothHands: childValue('playBothHands', 'false') === 'true',
       leftHandPitchOffset: parseInt(childValue('leftHandPitchOffset', '0'), 10),
       volume: parseFloat(childValue('volume', '1.0')),
+      unmutedVolume: parseFloat(childValue('volume', '1.0')),
     };
 
     const programs = children.filter((node) => node.localName === 'programs')[0];

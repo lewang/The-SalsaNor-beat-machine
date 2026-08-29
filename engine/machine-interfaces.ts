@@ -24,6 +24,7 @@ export interface IInstrument {
   playBothHands: boolean;
   leftHandPitchOffset: number;
   volume: number;
+  unmutedVolume: number;
   language?: string; // For language-aware instruments like 'instructor'
 }
 
