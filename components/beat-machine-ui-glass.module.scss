@@ -112,3 +112,12 @@
   min-height: 150px;
   padding: 0.5rem !important; // Minimal padding så tools kan være i hjørnet
 }
+
+.settingCheckbox {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  accent-color: #FFC947;
+  cursor: pointer;
+  align-self: flex-start;
+}

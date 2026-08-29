@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { observable } from 'mobx';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -24,6 +24,7 @@ import {
   summarizeTaps,
 } from '../engine/drill';
 import { calibrationFor } from '../engine/calibration';
+import { mixStateOf, nextMix } from '../engine/machine-mix';
 import {
   IStoredCalibration,
   loadCalibration,
@@ -62,6 +63,8 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   const [drillHistory, setDrillHistory] = useState<IDrillRun[]>([]);
   const [lastRun, setLastRun] = useState<IDrillRun | null>(null);
   const [tunedAs, setTunedAs] = useState<IMachineSnapshot | null>(null);
+  const [lastMix, setLastMix] = useState<boolean[] | null>(null);
+  const allInstruments = useRef<HTMLInputElement>(null);
 
   // Both stores are per-browser, so they can only be read once there is a browser to read them from.
   useEffect(() => {
@@ -83,6 +86,20 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   };
 
   const openDrill = () => setScreen('setup');
+
+  // Muting has to zero the gain as well as clear the flag, the same as a tile's own toggle: notes are already
+  // scheduled seconds ahead and are on their way to the speakers regardless.
+  const cycleInstruments = () => {
+    const enabled = machine.instruments.map((instrument) => instrument.enabled);
+    if (mixStateOf(enabled) === 'mixed') {
+      setLastMix(enabled);
+    }
+    nextMix(enabled, lastMix).forEach((on, index) => {
+      const instrument = machine.instruments[index];
+      instrument.volume = on ? instrument.unmutedVolume : 0;
+      instrument.enabled = on;
+    });
+  };
 
   const startDrill = () => {
     setTunedAs(snapshotMachine(machine));
@@ -148,6 +165,14 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   }, [engine, machine]);
 
   const hasClave = machine.instruments.some((instrument) => instrument.respectsClave);
+  const mix = mixStateOf(machine.instruments.map((instrument) => instrument.enabled));
+
+  // Indeterminate is a property rather than an attribute, so React cannot set it from JSX.
+  useEffect(() => {
+    if (allInstruments.current) {
+      allInstruments.current.indeterminate = mix === 'mixed';
+    }
+  }, [mix, screen]);
   const beatCount = machine.flavor === 'Merengue' ? 4 : 8;
   const beatDivider = machine.flavor === 'Merengue' ? 2 : 1;
   const beatIndex = engine?.playing ? Math.round(0.5 + ((engine.beat / beatDivider) % beatCount)) : 0;
@@ -319,6 +344,17 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
                 </select>
               </label>
             )}
+
+            <label className={styles.setting} title="All instruments on, all off, then back to your last mix">
+              <span className={styles.settingLabel}>All</span>
+              <input
+                ref={allInstruments}
+                type="checkbox"
+                className={styles.settingCheckbox}
+                checked={mix === 'all'}
+                onChange={cycleInstruments}
+              />
+            </label>
           </div>
         </div>
       </GlassContainer>
