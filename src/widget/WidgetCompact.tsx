@@ -249,7 +249,7 @@ export const WidgetCompact = observer(({ machine, instruments, initialBpm, autop
 
       <div className="footer">
         <a href="https://beat.salsanor.no" target="_blank" rel="noopener noreferrer">
-          Powered by SalsaNor Beat
+          Powered by Salsa Beat Lab
         </a>
       </div>
     </div>

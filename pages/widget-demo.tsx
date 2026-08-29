@@ -36,11 +36,11 @@ export default function WidgetDemo() {
     return (
       <>
         <Head>
-          <title>Widget Demo - SalsaNor Beat</title>
+          <title>Widget Demo - Salsa Beat Lab</title>
         </Head>
         <div style={containerStyle}>
           <div style={wrapperStyle}>
-            <h1 style={titleStyle}>🎵 Loading SalsaNor Beat...</h1>
+            <h1 style={titleStyle}>🎵 Loading Salsa Beat Lab...</h1>
           </div>
         </div>
       </>
@@ -50,8 +50,8 @@ export default function WidgetDemo() {
   return (
     <>
       <Head>
-        <title>Widget Demo - SalsaNor Beat</title>
-        <meta name="description" content="Live examples of SalsaNor Beat widgets with embed code" />
+        <title>Widget Demo - Salsa Beat Lab</title>
+        <meta name="description" content="Live examples of Salsa Beat Lab widgets with embed code" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -64,7 +64,7 @@ export default function WidgetDemo() {
             <a href="/docs" style={navLinkStyle}>📚 Documentation</a>
           </nav>
 
-          <h1 style={titleStyle}>🎵 SalsaNor Beat Widget Demo</h1>
+          <h1 style={titleStyle}>🎵 Salsa Beat Lab Widget Demo</h1>
           <p style={{ ...textStyle, textAlign: 'center', marginBottom: '3rem' }}>
             Live examples showing how to embed the Beat Machine widget on your website
           </p>
@@ -179,7 +179,7 @@ export default function WidgetDemo() {
               <a href="/docs" style={linkStyle}>full documentation</a>.
             </p>
             <p style={{ margin: '1rem 0', fontSize: '0.875rem', opacity: 0.7 }}>
-              Powered by SalsaNor Beat · <a href="https://beat.salsanor.no" style={linkStyle}>beat.salsanor.no</a>
+              Powered by Salsa Beat Lab · <a href="https://beat.salsanor.no" style={linkStyle}>beat.salsanor.no</a>
             </p>
           </div>
         </div>

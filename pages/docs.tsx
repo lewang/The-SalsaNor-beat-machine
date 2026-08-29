@@ -6,13 +6,13 @@ export default function Docs() {
   return (
     <>
       <Head>
-        <title>Documentation - SalsaNor Beat Machine</title>
-        <meta name="description" content="Complete documentation for the SalsaNor Beat Machine - interactive rhythm trainer for salsa and merengue" />
+        <title>Documentation - Salsa Beat Lab</title>
+        <meta name="description" content="Complete documentation for the Salsa Beat Lab - interactive rhythm trainer for salsa and merengue" />
       </Head>
 
       <div className={styles.container}>
         <header className={styles.header}>
-          <h1>📚 SalsaNor Beat Machine Documentation</h1>
+          <h1>📚 Salsa Beat Lab Documentation</h1>
           <p className={styles.subtitle}>Complete guide to using the Beat Machine app and embedding widgets</p>
         </header>
 
@@ -352,7 +352,7 @@ export default function Docs() {
 
         <footer className={styles.footer}>
           <p>
-            <strong>Powered by SalsaNor Beat</strong>
+            <strong>Powered by Salsa Beat Lab</strong>
           </p>
           <p>
             <a href="https://beat.salsanor.no" target="_blank" rel="noopener">beat.salsanor.no</a>
