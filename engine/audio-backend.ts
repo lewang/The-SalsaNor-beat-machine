@@ -10,16 +10,21 @@ interface BankDescriptor {
  * latency already taken out of it.
  */
 function outputSync(context: AudioContext): { ctx: number; perf: number } {
+  const now = context.currentTime;
+  const perf = performance.now();
+  let latency = typeof context.outputLatency === 'number' ? context.outputLatency : 0;
   try {
     const stamp = context.getOutputTimestamp ? context.getOutputTimestamp() : null;
-    if (stamp && stamp.contextTime != null && stamp.performanceTime) {
-      return { ctx: stamp.contextTime, perf: stamp.performanceTime };
+    if (stamp && stamp.contextTime != null) {
+      // Whichever reports more delay is the one to believe: a browser that answers getOutputTimestamp with
+      // the write position rather than the play position would otherwise hide the whole output latency, and
+      // every tap would read that much late.
+      latency = Math.max(latency, now - stamp.contextTime);
     }
   } catch (e) {
-    /* not implemented everywhere; the fallback is the same idea, assembled one field at a time */
+    /* not implemented everywhere; outputLatency alone still describes the same delay */
   }
-  const latency = typeof context.outputLatency === 'number' ? context.outputLatency : 0;
-  return { ctx: context.currentTime - latency, perf: performance.now() };
+  return { ctx: now - Math.max(0, latency), perf };
 }
 
 /** Where a performance-clock instant falls on the audio clock. */

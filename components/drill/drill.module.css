@@ -343,3 +343,17 @@
 .warn {
   color: #FFC947;
 }
+
+/* What was actually sounding for a past run: enabled instruments and the program each was on. */
+.rig {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  max-width: 36ch;
+  line-height: 1.4;
+}
+
+.rowActions {
+  display: flex;
+  gap: 10px;
+  white-space: nowrap;
+}

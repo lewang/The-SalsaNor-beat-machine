@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BeatEngine } from '../../engine/beat-engine';
 import { ICalibrationValue } from '../../engine/calibration';
 import {
-  CLOSE_BEATS,
+  calibrationHint,
+  closeBeatsFor,
   gradeTap,
   IDrillSettings,
   INSTRUCTOR_ID,
@@ -82,23 +83,17 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
   const finish = useRef(onFinish);
   finish.current = onFinish;
 
+  // The instructor's program list is the catalogue of count patterns; which one is being tapped is read from
+  // it without disturbing what that instrument is itself playing.
   const instructor = machine.instruments.find((candidate) => candidate.id === INSTRUCTOR_ID);
   const program = instructor?.programs[settings.programIndex];
   const targets = useMemo(() => (program ? programTargets(program) : []), [program]);
   const cycleBeats = program ? programCycleBeats(program) : 0;
+  const closeBeats = useMemo(() => closeBeatsFor(targets, cycleBeats), [targets, cycleBeats]);
 
-  // The drill owns the instructor for the length of the session: the regime decides whether the count is
-  // called, so the tile's own mute must not also get a vote. Both are handed back on the way out.
+  // The instructor is left alone: the regime can only take its voice away, never switch it on or change what
+  // it is playing. The pattern being tapped is a setting of the drill, not of that instrument.
   useEffect(() => {
-    if (!instructor) {
-      return;
-    }
-    const held = { enabled: instructor.enabled, volume: instructor.volume };
-    instructor.activeProgram = settings.programIndex;
-    instructor.enabled = true;
-    if (instructor.volume <= 0) {
-      instructor.volume = instructor.unmutedVolume > 0 ? instructor.unmutedVolume : 0.8;
-    }
     engine.voiceRegime = settings.regime;
     engine.stop();
     engine.play();
@@ -106,14 +101,12 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
     return () => {
       engine.stop();
       engine.voiceRegime = null;
-      instructor.enabled = held.enabled;
-      instructor.volume = held.volume;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    const limit = settings.minutes === null ? null : settings.minutes * 60000;
+    const limit = settings.seconds === null ? null : settings.seconds * 1000;
     const timer = window.setInterval(() => {
       const since = performance.now() - startedAt.current;
       setElapsedMs(since);
@@ -123,7 +116,7 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
       }
     }, 250);
     return () => window.clearInterval(timer);
-  }, [settings.minutes]);
+  }, [settings.seconds]);
 
   const handleTap = useCallback(
     (perfMs: number, src: TapSource) => {
@@ -136,7 +129,7 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
       }
       const msPerBeat = engine.beatTime * 1000;
       const offsetMs = calibration[src]?.offsetMs ?? 0;
-      const tap = gradeTap(targets, cycleBeats, beat - offsetMs / msPerBeat, msPerBeat);
+      const tap = gradeTap(targets, cycleBeats, beat - offsetMs / msPerBeat, msPerBeat, closeBeats);
       if (!tap) {
         return;
       }
@@ -147,15 +140,16 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
         playClick(engine.audioContext);
       }
     },
-    [engine, targets, cycleBeats, calibration, clickOnTap],
+    [engine, targets, cycleBeats, closeBeats, calibration, clickOnTap],
   );
 
   useTapInput(true, handleTap);
 
   const summary = summarizeTaps(taps);
   const msPerBeat = engine.beatTime * 1000;
-  const remaining = settings.minutes === null ? null : settings.minutes * 60000 - elapsedMs;
-  const needle = last ? 50 + Math.max(-1, Math.min(1, last.errBeats / CLOSE_BEATS)) * 50 : 50;
+  const remaining = settings.seconds === null ? null : settings.seconds * 1000 - elapsedMs;
+  const needle = last ? 50 + Math.max(-1, Math.min(1, last.errBeats / closeBeats)) * 50 : 50;
+  const hint = calibrationHint(summary);
 
   return (
     <div className={styles.screen}>
@@ -208,9 +202,9 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
           {last && <div className={styles.needle} style={{ left: needle + '%' }} />}
         </div>
         <div className={styles.gaugeEnds}>
-          <span>early −{Math.round(msPerBeat * CLOSE_BEATS)} ms</span>
+          <span>early −{Math.round(msPerBeat * closeBeats)} ms</span>
           <span>±{Math.round(msPerBeat / 8)} ms</span>
-          <span>late +{Math.round(msPerBeat * CLOSE_BEATS)} ms</span>
+          <span>late +{Math.round(msPerBeat * closeBeats)} ms</span>
         </div>
       </TapPad>
 
@@ -232,7 +226,11 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
           <span>
             strays <b>{summary.strays}</b>
           </span>
+          <span>
+            raw <b>{summary.rawMedianMs === null ? '—' : signed(summary.rawMedianMs) + ' ms'}</b>
+          </span>
         </div>
+        {hint && <p className={styles.note}>{hint}</p>}
       </GlassContainer>
     </div>
   );

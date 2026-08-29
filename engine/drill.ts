@@ -42,6 +42,8 @@ export interface ISummary {
   onPercent: number | null;
   meanMs: number | null;
   sdMs: number | null;
+  /** Median over every tap, strays included: a constant input delay shows here and nowhere else. */
+  rawMedianMs: number | null;
 }
 
 /** The beats a program calls, in beats from the top of its cycle. */
@@ -74,9 +76,27 @@ export function nearestTarget(targets: ITarget[], cycleBeats: number, beat: numb
   return best;
 }
 
-export function classifyTap(errBeats: number): TapClass {
+/**
+ * How far out a tap can be and still be read as aimed at its target. Half the smallest gap between targets,
+ * because that is the point at which the next one becomes the better explanation -- a fixed half-beat would
+ * call a tap 0.6 beats late a stray even on a pattern whose beats are four apart and nothing else is near.
+ */
+export function closeBeatsFor(targets: ITarget[], cycleBeats: number): number {
+  if (targets.length < 2) {
+    return Math.max(ON_BEATS, cycleBeats / 2);
+  }
+  const beats = targets.map((target) => target.beat).sort((a, b) => a - b);
+  let smallest = cycleBeats;
+  for (let i = 0; i < beats.length; i++) {
+    const next = i + 1 < beats.length ? beats[i + 1] : beats[0] + cycleBeats;
+    smallest = Math.min(smallest, next - beats[i]);
+  }
+  return Math.max(ON_BEATS, smallest / 2);
+}
+
+export function classifyTap(errBeats: number, closeBeats: number = CLOSE_BEATS): TapClass {
   const size = Math.abs(errBeats);
-  return size <= ON_BEATS ? 'on' : size <= CLOSE_BEATS ? 'close' : 'stray';
+  return size <= ON_BEATS ? 'on' : size <= closeBeats ? 'close' : 'stray';
 }
 
 /**
@@ -95,7 +115,13 @@ export function voiceSoundsAt(regime: VoiceRegime, sampleIndex: number): boolean
   return leg % 2 === 0;
 }
 
-export function gradeTap(targets: ITarget[], cycleBeats: number, beat: number, msPerBeat: number): ITap | null {
+export function gradeTap(
+  targets: ITarget[],
+  cycleBeats: number,
+  beat: number,
+  msPerBeat: number,
+  closeBeats: number,
+): ITap | null {
   const hit = nearestTarget(targets, cycleBeats, beat);
   if (!hit) {
     return null;
@@ -103,7 +129,7 @@ export function gradeTap(targets: ITarget[], cycleBeats: number, beat: number, m
   return {
     errBeats: hit.errBeats,
     errMs: hit.errBeats * msPerBeat,
-    cls: classifyTap(hit.errBeats),
+    cls: classifyTap(hit.errBeats, closeBeats),
     count: hit.count,
   };
 }
@@ -124,6 +150,7 @@ export const median = (xs: number[]): number => {
 export function summarizeTaps(taps: ITap[]): ISummary {
   const aimed = taps.filter((tap) => tap.cls !== 'stray');
   const onCount = taps.filter((tap) => tap.cls === 'on').length;
+  const rawMedianMs = taps.length ? median(taps.map((tap) => tap.errMs)) : null;
   if (!taps.length || !aimed.length) {
     return {
       n: taps.length,
@@ -133,6 +160,7 @@ export function summarizeTaps(taps: ITap[]): ISummary {
       onPercent: taps.length ? (onCount / taps.length) * 100 : null,
       meanMs: null,
       sdMs: null,
+      rawMedianMs,
     };
   }
   const mean = aimed.reduce((sum, tap) => sum + tap.errMs, 0) / aimed.length;
@@ -145,11 +173,34 @@ export function summarizeTaps(taps: ITap[]): ISummary {
     onPercent: (onCount / taps.length) * 100,
     meanMs: mean,
     sdMs: aimed.length < 2 ? null : Math.sqrt(variance),
+    rawMedianMs,
   };
+}
+
+/**
+ * A tap habit large enough to be a delay rather than a mistake. Reported so that a session of strays says what
+ * is wrong with it instead of only that it went badly.
+ */
+export function calibrationHint(summary: ISummary): string | null {
+  if (summary.n < 6 || summary.rawMedianMs === null || Math.abs(summary.rawMedianMs) < 60) {
+    return null;
+  }
+  const size = Math.round(Math.abs(summary.rawMedianMs));
+  const side = summary.rawMedianMs > 0 ? 'behind' : 'ahead of';
+  return (
+    'Your taps sit about ' +
+    size +
+    ' ms ' +
+    side +
+    ' the beat, tap after tap. That is the size of an input delay rather than of a mistake — run the calibration ' +
+    'and it comes off every tap automatically.'
+  );
 }
 
 export interface IInstrumentSnapshot {
   id: string;
+  title: string;
+  programTitle: string;
   enabled: boolean;
   activeProgram: number;
   volume: number;
@@ -172,6 +223,8 @@ export function snapshotMachine(machine: IMachine): IMachineSnapshot {
     claveDirection: machine.claveDirection,
     instruments: machine.instruments.map((instrument) => ({
       id: instrument.id,
+      title: instrument.title,
+      programTitle: instrument.programs[instrument.activeProgram]?.title ?? '',
       enabled: instrument.enabled,
       activeProgram: instrument.activeProgram,
       volume: instrument.volume,
@@ -197,11 +250,22 @@ export function applyMachineSnapshot(machine: IMachine, snapshot: IMachineSnapsh
   }
 }
 
+/** What was actually sounding, for reading a past run back. Entries stored before this predate the titles. */
+export function describeMachine(snapshot: IMachineSnapshot): string[] {
+  return snapshot.instruments
+    .filter((instrument) => instrument.enabled)
+    .map((instrument) => {
+      const name = instrument.title || instrument.id;
+      return instrument.programTitle ? name + ' · ' + instrument.programTitle : name;
+    });
+}
+
 export interface IDrillSettings {
+  /** Which pattern to tap. Its own setting: the instructor is left playing whatever the machine screen says. */
   programIndex: number;
   regime: VoiceRegime;
   /** null runs until stopped by hand. */
-  minutes: number | null;
+  seconds: number | null;
 }
 
 export interface IDrillRun {
@@ -213,14 +277,25 @@ export interface IDrillRun {
   machine: IMachineSnapshot;
 }
 
-export const SESSION_MINUTES: (number | null)[] = [1, 3, 5, 10, null];
+export const SESSION_SECONDS: (number | null)[] = [30, 60, 180, 300, 600, null];
 
+export function sessionLengthLabel(seconds: number | null): string {
+  if (seconds === null) {
+    return 'Forever';
+  }
+  return seconds < 60 ? seconds + ' sec' : seconds / 60 + ' min';
+}
+
+/**
+ * What the drill does to the instructor while a session runs. It can only take the voice away: an instructor
+ * switched off on the machine screen stays off under every regime, and its own program is never touched.
+ */
 export const REGIME_LABELS: { value: VoiceRegime; label: string; detail: string }[] = [
-  { value: 'on', label: 'Voice on', detail: 'the count is called throughout' },
-  { value: 'off', label: 'Voice off', detail: 'percussion only — you hold the pattern' },
+  { value: 'on', label: 'Leave it be', detail: 'the instructor plays whatever you set it to' },
+  { value: 'off', label: 'Silence it', detail: 'muted for the session, whatever it was set to' },
   {
     value: 'alternating',
     label: 'Alternating',
-    detail: ALTERNATION_BEATS + ' beats called, ' + ALTERNATION_BEATS + ' silent, repeating',
+    detail: ALTERNATION_BEATS + ' beats through, ' + ALTERNATION_BEATS + ' muted, repeating',
   },
 ];

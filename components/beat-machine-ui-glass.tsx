@@ -57,7 +57,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   const [machine, setMachine] = useState(observable(salsa));
   const [instructorLanguage, setInstructorLanguage] = useState<string>('');
   const [screen, setScreen] = useState<'machine' | 'setup' | 'drill' | 'summary' | 'calibrate'>('machine');
-  const [settings, setSettings] = useState<IDrillSettings>({ programIndex: 1, regime: 'on', minutes: 5 });
+  const [settings, setSettings] = useState<IDrillSettings>({ programIndex: 1, regime: 'on', seconds: 300 });
   const [calibrationStore, setCalibrationStore] = useState<IStoredCalibration>({ history: [], manual: {} });
   const [drillHistory, setDrillHistory] = useState<IDrillRun[]>([]);
   const [lastRun, setLastRun] = useState<IDrillRun | null>(null);
@@ -82,18 +82,14 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
     saveCalibration(next);
   };
 
-  const openDrill = () => {
-    const instructor = machine.instruments.find((instrument) => instrument.id === INSTRUCTOR_ID);
-    setSettings({ ...settings, programIndex: instructor ? instructor.activeProgram : settings.programIndex });
-    setScreen('setup');
-  };
+  const openDrill = () => setScreen('setup');
 
   const startDrill = () => {
     setTunedAs(snapshotMachine(machine));
     setScreen('drill');
   };
 
-  // The run is filed against the machine as it was tuned, before the drill took the instructor over.
+  // The run is filed against the machine as it stood when the session started.
   const finishDrill = (taps: ITap[], elapsedMs: number) => {
     const instructor = machine.instruments.find((instrument) => instrument.id === INSTRUCTOR_ID);
     const run: IDrillRun = {
@@ -109,6 +105,12 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
     saveDrillHistory(history);
     setLastRun(run);
     setScreen('summary');
+  };
+
+  const forgetRun = (run: IDrillRun) => {
+    const history = drillHistory.filter((entry) => entry.at !== run.at);
+    setDrillHistory(history);
+    saveDrillHistory(history);
   };
 
   const restoreRun = (run: IDrillRun) => {
@@ -227,6 +229,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
             history={drillHistory}
             onAgain={() => setScreen('drill')}
             onRestore={restoreRun}
+            onRemove={forgetRun}
             onBack={() => setScreen('machine')}
           />
         )}

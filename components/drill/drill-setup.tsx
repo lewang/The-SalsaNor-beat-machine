@@ -4,7 +4,8 @@ import {
   IDrillSettings,
   INSTRUCTOR_ID,
   REGIME_LABELS,
-  SESSION_MINUTES,
+  SESSION_SECONDS,
+  sessionLengthLabel,
   TapSource,
   VoiceRegime,
 } from '../../engine/drill';
@@ -20,8 +21,6 @@ interface IDrillSetupProps {
   onCalibrate: () => void;
   onBack: () => void;
 }
-
-const lengthLabel = (minutes: number | null) => (minutes === null ? 'Forever' : minutes + ' min');
 
 export const DrillSetup = ({
   machine,
@@ -55,14 +54,16 @@ export const DrillSetup = ({
         </GlassButton>
       </div>
       <p className={styles.lede}>
-        Tap the beats the instructor calls, on the keyboard or the trackpad, and each tap is graded against the
-        machine&rsquo;s own clock. Everything is chosen here — once the session starts the instruments are locked,
-        so the machine you tuned is the machine you practise against.
+        Tap the pattern, on the keyboard or the trackpad, and each tap is graded against the machine&rsquo;s own
+        clock. The pattern is yours to pick and is independent of the instructor, which stays whatever you set it to
+        on the machine screen — switch it off there and you tap against the music alone. Everything is chosen here:
+        once the session starts the instruments are locked, so the machine you tuned is the machine you practise
+        against.
       </p>
 
       <GlassContainer className={styles.panel}>
         <div className={styles.field}>
-          <span className={styles.fieldLabel}>Pattern</span>
+          <span className={styles.fieldLabel}>Tap pattern</span>
           <div className={styles.choices}>
             {instructor.programs.map((program, index) => (
               <button
@@ -79,7 +80,7 @@ export const DrillSetup = ({
         </div>
 
         <div className={styles.field}>
-          <span className={styles.fieldLabel}>Voice</span>
+          <span className={styles.fieldLabel}>Instructor</span>
           <div className={styles.choices}>
             {REGIME_LABELS.map((regime) => (
               <button
@@ -99,15 +100,15 @@ export const DrillSetup = ({
         <div className={styles.field}>
           <span className={styles.fieldLabel}>Length</span>
           <div className={styles.choices}>
-            {SESSION_MINUTES.map((minutes) => (
+            {SESSION_SECONDS.map((seconds) => (
               <button
-                key={String(minutes)}
+                key={String(seconds)}
                 type="button"
                 className={styles.choice}
-                aria-pressed={settings.minutes === minutes}
-                onClick={() => onChange({ ...settings, minutes })}
+                aria-pressed={settings.seconds === seconds}
+                onClick={() => onChange({ ...settings, seconds })}
               >
-                <span>{lengthLabel(minutes)}</span>
+                <span>{sessionLengthLabel(seconds)}</span>
               </button>
             ))}
           </div>

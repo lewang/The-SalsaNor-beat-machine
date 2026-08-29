@@ -1,4 +1,4 @@
-import { IDrillRun, REGIME_LABELS } from '../../engine/drill';
+import { calibrationHint, describeMachine, IDrillRun, REGIME_LABELS, sessionLengthLabel } from '../../engine/drill';
 import { GlassButton, GlassContainer } from '../ui';
 import styles from './drill.module.css';
 
@@ -7,12 +7,12 @@ interface IDrillSummaryProps {
   history: IDrillRun[];
   onAgain: () => void;
   onRestore: (run: IDrillRun) => void;
+  onRemove: (run: IDrillRun) => void;
   onBack: () => void;
 }
 
 const signed = (ms: number) => (ms < 0 ? '−' : '+') + Math.round(Math.abs(ms));
 const regimeLabel = (value: string) => REGIME_LABELS.find((regime) => regime.value === value)?.label ?? value;
-const lengthLabel = (minutes: number | null) => (minutes === null ? 'open' : minutes + ' min');
 const when = (at: number) => {
   const date = new Date(at);
   return (
@@ -22,16 +22,17 @@ const when = (at: number) => {
   );
 };
 
-export const DrillSummary = ({ run, history, onAgain, onRestore, onBack }: IDrillSummaryProps) => {
+export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBack }: IDrillSummaryProps) => {
   const { summary } = run;
   const past = history.filter((entry) => entry.at !== run.at);
+  const hint = calibrationHint(summary);
 
   return (
     <div className={styles.screen}>
       <div className={styles.head}>
         <h2 className={styles.title}>
           <span className={styles.mono}>{run.patternTitle}</span> — {regimeLabel(run.settings.regime)},{' '}
-          {Math.round(run.elapsedMs / 1000)}s
+          {sessionLengthLabel(run.settings.seconds)}
         </h2>
         <div className={styles.actions}>
           <GlassButton variant="primary" onClick={onAgain}>
@@ -69,7 +70,14 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onBack }: IDril
             <span className={styles.summaryValue}>{summary.strays}</span>
             <span className={styles.summaryLabel}>strays</span>
           </div>
+          <div className={styles.summaryCell}>
+            <span className={styles.summaryValue}>
+              {summary.rawMedianMs === null ? '—' : signed(summary.rawMedianMs)}
+            </span>
+            <span className={styles.summaryLabel}>raw (ms)</span>
+          </div>
         </div>
+        {hint && <p className={styles.note + ' ' + styles.warn}>{hint}</p>}
         <p className={styles.note}>
           Drift is the bias to correct on the next run — a positive number means you are habitually behind the beat.
           Spread is how consistent you were around your own bias, and is the one that shrinks with practice. Only
@@ -84,14 +92,14 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onBack }: IDril
             <thead>
               <tr>
                 <th>when</th>
-                <th>pattern</th>
-                <th>voice</th>
+                <th>tap pattern</th>
                 <th>length</th>
+                <th>instructor</th>
                 <th>taps</th>
                 <th>on it</th>
                 <th>drift</th>
                 <th>spread</th>
-                <th>bpm</th>
+                <th>machine</th>
                 <th />
               </tr>
             </thead>
@@ -100,8 +108,8 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onBack }: IDril
                 <tr key={entry.at}>
                   <td>{when(entry.at)}</td>
                   <td className={styles.mono}>{entry.patternTitle}</td>
+                  <td>{sessionLengthLabel(entry.settings.seconds)}</td>
                   <td>{regimeLabel(entry.settings.regime)}</td>
-                  <td>{lengthLabel(entry.settings.minutes)}</td>
                   <td className="num">{entry.summary.n}</td>
                   <td className="num">
                     {entry.summary.onPercent === null ? '—' : Math.round(entry.summary.onPercent) + '%'}
@@ -110,10 +118,16 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onBack }: IDril
                   <td className="num">
                     {entry.summary.sdMs === null ? '—' : '±' + Math.round(entry.summary.sdMs)}
                   </td>
-                  <td className="num">{entry.machine.bpm}</td>
                   <td>
+                    <div className={styles.mono}>{entry.machine.bpm} BPM</div>
+                    <div className={styles.rig}>{describeMachine(entry.machine).join(', ') || 'nothing playing'}</div>
+                  </td>
+                  <td className={styles.rowActions}>
                     <button type="button" className={styles.linkButton} onClick={() => onRestore(entry)}>
                       Restore
+                    </button>
+                    <button type="button" className={styles.linkButton} onClick={() => onRemove(entry)}>
+                      Remove
                     </button>
                   </td>
                 </tr>

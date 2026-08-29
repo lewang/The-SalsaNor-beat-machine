@@ -4,7 +4,7 @@ import { CALIBRATION_HISTORY_MAX, ICalibrationRun } from './calibration';
 
 const CALIBRATION_KEY = 'bm-tap-calibration';
 const DRILL_HISTORY_KEY = 'bm-drill-history';
-const DRILL_HISTORY_MAX = 24;
+const DRILL_HISTORY_MAX = 100;
 
 export interface IStoredCalibration {
   history: ICalibrationRun[];
@@ -56,8 +56,15 @@ export function clearCalibration() {
   }
 }
 
+/** Session length moved from minutes to seconds once half a minute became an option. */
 export function loadDrillHistory(): IDrillRun[] {
-  return read<IDrillRun[]>(DRILL_HISTORY_KEY, []);
+  return read<IDrillRun[]>(DRILL_HISTORY_KEY, []).map((run) => {
+    const legacy = (run.settings as { minutes?: number | null }).minutes;
+    if (run.settings.seconds === undefined && legacy !== undefined) {
+      return { ...run, settings: { ...run.settings, seconds: legacy === null ? null : legacy * 60 } };
+    }
+    return run;
+  });
 }
 
 export function saveDrillHistory(runs: IDrillRun[]) {
