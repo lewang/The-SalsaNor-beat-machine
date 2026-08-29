@@ -38,3 +38,7 @@ yarn-error.log*
 firebase-debug.log
 package.json
 next.config.js
+
+# Local tooling artifacts
+.playwright-cli/
+tsconfig.tsbuildinfo

@@ -3,6 +3,7 @@ import { AudioBackend } from './audio-backend';
 import { InstrumentPlayer } from './instrument-player';
 import { createMachine } from './machine';
 import { IInstrument, IMachine } from './machine-interfaces';
+import { INSTRUCTOR_ID, VoiceRegime, voiceSoundsAt } from './drill';
 
 // Programs are indexed in half-beats, so one bar of salsa is eight of them. Rotating a
 // clave-respecting program by a bar is what turns 2-3 around into 3-2.
@@ -24,6 +25,8 @@ export class BeatEngine {
   interval: number | null = null;
   _machine: IMachine = createMachine();
   beat = 0;
+  /** Set while a drill session owns the instructor; null leaves the tile's own mute in charge. */
+  voiceRegime: VoiceRegime | null = null;
 
   constructor(private mixer: AudioBackend) {
     makeAutoObservable(this);
@@ -35,6 +38,11 @@ export class BeatEngine {
       ready: this.mixer.ready,
       hasContext: !!this.mixer.context,
     });
+  }
+
+  /** The drill and the calibration screen measure against the same output the machine is playing through. */
+  get audioContext() {
+    return this.mixer.context;
   }
 
   get machine() {
@@ -135,6 +143,15 @@ export class BeatEngine {
     return (this.mixer.getCurrentTime() + this.audioTimeDelta) / this.beatTime;
   }
 
+  /** Where a performance-clock instant falls on the beat grid -- what a tap's event.timeStamp maps to. */
+  beatAtPerformanceTime(perfMs: number): number | null {
+    const time = this.mixer.getTimeAt(perfMs);
+    if (time == null) {
+      return null;
+    }
+    return (time + this.audioTimeDelta) / this.beatTime;
+  }
+
   private getInstrumentPlayer(context: AudioContext, instrument: IInstrument) {
     const instrumentPlayer = this.instrumentPlayers.get(instrument);
     if (instrumentPlayer) {
@@ -173,6 +190,9 @@ export class BeatEngine {
 
   private instrumentNotes(instrument: IInstrument, sampleIndex: number): IInstrumentSample[] {
     const result: IInstrumentSample[] = [];
+    if (this.voiceRegime && instrument.id === INSTRUCTOR_ID && !voiceSoundsAt(this.voiceRegime, sampleIndex)) {
+      return result;
+    }
     if (instrument.enabled) {
       const program = instrument.programs[instrument.activeProgram];
       if (instrument.respectsClave && this.machine.claveDirection === '3-2') {

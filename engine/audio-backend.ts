@@ -4,6 +4,30 @@ interface BankDescriptor {
   [sampleName: string]: number[];
 }
 
+/**
+ * Context time currently being heard, paired with the performance clock. getOutputTimestamp reports the frame
+ * leaving the device rather than the one being written, so a tap converted through this pairing has the output
+ * latency already taken out of it.
+ */
+function outputSync(context: AudioContext): { ctx: number; perf: number } {
+  try {
+    const stamp = context.getOutputTimestamp ? context.getOutputTimestamp() : null;
+    if (stamp && stamp.contextTime != null && stamp.performanceTime) {
+      return { ctx: stamp.contextTime, perf: stamp.performanceTime };
+    }
+  } catch (e) {
+    /* not implemented everywhere; the fallback is the same idea, assembled one field at a time */
+  }
+  const latency = typeof context.outputLatency === 'number' ? context.outputLatency : 0;
+  return { ctx: context.currentTime - latency, perf: performance.now() };
+}
+
+/** Where a performance-clock instant falls on the audio clock. */
+export function contextTimeAt(context: AudioContext, perfMs: number): number {
+  const sync = outputSync(context);
+  return sync.ctx + (perfMs - sync.perf) / 1000;
+}
+
 export class AudioBackend {
   public ready: boolean;
   private buffer?: AudioBuffer;
@@ -130,5 +154,14 @@ export class AudioBackend {
       return 0;
     }
     return this.context!.currentTime - this.zeroTime;
+  }
+
+  /** Machine time at a performance-clock instant, on the same zeroTime-relative clock getCurrentTime reports. */
+  getTimeAt(perfMs: number): number | null {
+    const context = this.context;
+    if (!context || this.zeroTime == null) {
+      return null;
+    }
+    return contextTimeAt(context, perfMs) - this.zeroTime;
   }
 }
