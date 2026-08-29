@@ -1,4 +1,5 @@
 import classnames from 'classnames';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { GlassButton, GlassContainer } from '../ui';
 import { ICalibrationValue } from '../../engine/calibration';
 import {
@@ -19,6 +20,7 @@ interface IDrillSetupProps {
   calibration: Partial<Record<TapSource, ICalibrationValue | null>>;
   onChange: (settings: IDrillSettings) => void;
   onStart: () => void;
+  onDefaults: () => void;
   onCalibrate: () => void;
   onBack: () => void;
 }
@@ -29,6 +31,7 @@ export const DrillSetup = ({
   calibration,
   onChange,
   onStart,
+  onDefaults,
   onCalibrate,
   onBack,
 }: IDrillSetupProps) => {
@@ -51,9 +54,20 @@ export const DrillSetup = ({
     <div className={styles.screen}>
       <div className={styles.head}>
         <h2 className={styles.title}>Tap-along drill</h2>
-        <GlassButton variant="ghost" onClick={onBack}>
-          Back to the machine
-        </GlassButton>
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={styles.rowIcon}
+            aria-label="Restore the default settings"
+            title="Restore the default settings"
+            onClick={onDefaults}
+          >
+            <RestartAltIcon />
+          </button>
+          <GlassButton variant="ghost" onClick={onBack}>
+            Back to the machine
+          </GlassButton>
+        </div>
       </div>
       <p className={styles.lede}>
         Tap the pattern, on the keyboard or the trackpad, and each tap is graded against the machine&rsquo;s own

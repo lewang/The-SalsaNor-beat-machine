@@ -15,6 +15,7 @@ import styles from './beat-machine-ui-glass.module.scss';
 import { IDefaultMachines } from './beat-machine-ui';
 import {
   applyMachineSnapshot,
+  DEFAULT_DRILL_SETTINGS,
   IDrillRun,
   IDrillSettings,
   IMachineSnapshot,
@@ -29,8 +30,10 @@ import {
   IStoredCalibration,
   loadCalibration,
   loadDrillHistory,
+  loadDrillSettings,
   saveCalibration,
   saveDrillHistory,
+  saveDrillSettings,
 } from '../engine/practice-storage';
 import { DrillSetup } from './drill/drill-setup';
 import { DrillScreen } from './drill/drill-screen';
@@ -58,11 +61,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   const [machine, setMachine] = useState(observable(salsa));
   const [instructorLanguage, setInstructorLanguage] = useState<string>('');
   const [screen, setScreen] = useState<'machine' | 'setup' | 'drill' | 'summary' | 'calibrate'>('machine');
-  const [settings, setSettings] = useState<IDrillSettings>({
-    programIndex: 1,
-    voice: { onBars: null, offBars: null },
-    seconds: 300,
-  });
+  const [settings, setSettings] = useState<IDrillSettings>(DEFAULT_DRILL_SETTINGS);
   const [calibrationStore, setCalibrationStore] = useState<IStoredCalibration>({ history: [], manual: {} });
   const [drillHistory, setDrillHistory] = useState<IDrillRun[]>([]);
   const [lastRun, setLastRun] = useState<IDrillRun | null>(null);
@@ -74,7 +73,14 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   useEffect(() => {
     setCalibrationStore(loadCalibration());
     setDrillHistory(loadDrillHistory());
+    setSettings(loadDrillSettings());
   }, []);
+
+  // What you drilled last time is what the screen opens on, so a routine does not have to be rebuilt daily.
+  const changeSettings = (next: IDrillSettings) => {
+    setSettings(next);
+    saveDrillSettings(next);
+  };
 
   const calibration = useMemo(
     () => ({
@@ -141,7 +147,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
     if (!sameFlavor) {
       setMachine(target);
     }
-    setSettings(run.settings);
+    changeSettings(run.settings);
     setScreen('setup');
   };
 
@@ -237,8 +243,9 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
             machine={machine}
             settings={settings}
             calibration={calibration}
-            onChange={setSettings}
+            onChange={changeSettings}
             onStart={startDrill}
+            onDefaults={() => changeSettings(DEFAULT_DRILL_SETTINGS)}
             onCalibrate={() => setScreen('calibrate')}
             onBack={() => setScreen('machine')}
           />

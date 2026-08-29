@@ -262,6 +262,12 @@ export interface IDrillSettings {
   seconds: number | null;
 }
 
+export const DEFAULT_DRILL_SETTINGS: IDrillSettings = {
+  programIndex: 1,
+  voice: { onBars: null, offBars: null },
+  seconds: 30,
+};
+
 export interface IDrillRun {
   at: number;
   elapsedMs: number;

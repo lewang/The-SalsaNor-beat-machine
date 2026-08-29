@@ -1,9 +1,10 @@
 import { TapSource } from './drill';
-import { IDrillRun } from './drill';
+import { DEFAULT_DRILL_SETTINGS, IDrillRun, IDrillSettings } from './drill';
 import { CALIBRATION_HISTORY_MAX, ICalibrationRun } from './calibration';
 
 const CALIBRATION_KEY = 'bm-tap-calibration';
 const DRILL_HISTORY_KEY = 'bm-drill-history';
+const DRILL_SETTINGS_KEY = 'bm-drill-settings';
 const DRILL_HISTORY_MAX = 100;
 
 export interface IStoredCalibration {
@@ -74,6 +75,20 @@ export function loadDrillHistory(): IDrillRun[] {
     }
     return { ...run, settings };
   });
+}
+
+/** Merged over the defaults, so a stored setting from before a new field existed still opens the screen. */
+export function loadDrillSettings(): IDrillSettings {
+  const stored = read<Partial<IDrillSettings>>(DRILL_SETTINGS_KEY, {});
+  return {
+    ...DEFAULT_DRILL_SETTINGS,
+    ...stored,
+    voice: { ...DEFAULT_DRILL_SETTINGS.voice, ...(stored.voice ?? {}) },
+  };
+}
+
+export function saveDrillSettings(settings: IDrillSettings) {
+  write(DRILL_SETTINGS_KEY, settings);
 }
 
 export function saveDrillHistory(runs: IDrillRun[]) {
