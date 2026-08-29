@@ -39,6 +39,8 @@ export interface ITap {
   errMs: number;
   cls: TapClass;
   count: number;
+  /** Which input made it, so a delay can be attributed to the thing that caused it. */
+  src?: TapSource;
 }
 
 export interface ISummary {
@@ -51,6 +53,8 @@ export interface ISummary {
   sdMs: number | null;
   /** Median over every tap, strays included: a constant input delay shows here and nowhere else. */
   rawMedianMs: number | null;
+  /** The same median split by input, since only one of them may be the one running late. */
+  rawBySource: Partial<Record<TapSource, { medianMs: number; n: number }>>;
 }
 
 /** The beats a program calls, in beats from the top of its cycle. */
@@ -148,6 +152,13 @@ export function summarizeTaps(taps: ITap[]): ISummary {
   const aimed = taps.filter((tap) => tap.cls !== 'stray');
   const onCount = taps.filter((tap) => tap.cls === 'on').length;
   const rawMedianMs = taps.length ? median(taps.map((tap) => tap.errMs)) : null;
+  const rawBySource: Partial<Record<TapSource, { medianMs: number; n: number }>> = {};
+  for (const src of ['key', 'pad'] as TapSource[]) {
+    const mine = taps.filter((tap) => tap.src === src);
+    if (mine.length) {
+      rawBySource[src] = { medianMs: median(mine.map((tap) => tap.errMs)), n: mine.length };
+    }
+  }
   if (!taps.length || !aimed.length) {
     return {
       n: taps.length,
@@ -158,6 +169,7 @@ export function summarizeTaps(taps: ITap[]): ISummary {
       meanMs: null,
       sdMs: null,
       rawMedianMs,
+      rawBySource,
     };
   }
   const mean = aimed.reduce((sum, tap) => sum + tap.errMs, 0) / aimed.length;
@@ -171,6 +183,7 @@ export function summarizeTaps(taps: ITap[]): ISummary {
     meanMs: mean,
     sdMs: aimed.length < 2 ? null : Math.sqrt(variance),
     rawMedianMs,
+    rawBySource,
   };
 }
 
@@ -178,6 +191,15 @@ export function summarizeTaps(taps: ITap[]): ISummary {
  * A tap habit large enough to be a delay rather than a mistake. Reported so that a session of strays says what
  * is wrong with it instead of only that it went badly.
  */
+/** How many taps from one input before its offset is worth offering as that input's constant. */
+export const ADOPTABLE_TAPS = 6;
+
+export function adoptableOffsets(summary: ISummary): { src: TapSource; medianMs: number; n: number }[] {
+  return (['key', 'pad'] as TapSource[])
+    .map((src) => ({ src, ...(summary.rawBySource?.[src] ?? { medianMs: 0, n: 0 }) }))
+    .filter((entry) => entry.n >= ADOPTABLE_TAPS && Math.abs(entry.medianMs) >= 20);
+}
+
 export function calibrationHint(summary: ISummary): string | null {
   if (summary.n < 6 || summary.rawMedianMs === null || Math.abs(summary.rawMedianMs) < 60) {
     return null;

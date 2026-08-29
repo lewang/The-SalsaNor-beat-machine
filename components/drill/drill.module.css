@@ -564,3 +564,15 @@
 .rigProgram {
   color: rgba(255, 255, 255, 0.5);
 }
+
+.hint {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.linkButton:disabled {
+  color: rgba(255, 255, 255, 0.45);
+  cursor: default;
+  text-decoration: none;
+}

@@ -21,6 +21,7 @@ import {
   INSTRUCTOR_ID,
   ITap,
   snapshotMachine,
+  TapSource,
   summarizeTaps,
 } from '../engine/drill';
 import { calibrationFor } from '../engine/calibration';
@@ -116,6 +117,18 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   const rememberCalibration = (next: IStoredCalibration) => {
     setCalibrationStore(next);
     saveCalibration(next);
+  };
+
+  /**
+   * A delay the drill measured, adopted as that input's constant. Kept as a hand-set value rather than filed as
+   * a run: it was measured against the music rather than the calibration screen's bare click, so it should not
+   * be averaged in with those, and it stays visible there as an override you can clear.
+   */
+  const adoptCalibration = (src: TapSource, offsetMs: number) => {
+    rememberCalibration({
+      ...calibrationStore,
+      manual: { ...calibrationStore.manual, [src]: Math.round(offsetMs) },
+    });
   };
 
   // The machine falls silent on the way into the drill: the session starts the transport itself, from the top
@@ -329,6 +342,8 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
             onAgain={() => setScreen('drill')}
             onRestore={restoreRun}
             onRemove={forgetRun}
+            onAdoptCalibration={adoptCalibration}
+            calibration={calibration}
             onBack={() => setScreen('machine')}
           />
         )}

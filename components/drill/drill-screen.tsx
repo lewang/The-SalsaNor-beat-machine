@@ -133,7 +133,7 @@ export const DrillScreen = ({ engine, machine, settings, calibration, onFinish }
       if (!tap) {
         return;
       }
-      collected.current = [...collected.current, tap];
+      collected.current = [...collected.current, { ...tap, src }];
       setTaps(collected.current);
       setLast(tap);
       if (clickOnTap) {

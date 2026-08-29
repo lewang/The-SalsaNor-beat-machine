@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import classnames from 'classnames';
 import {
+  adoptableOffsets,
   calibrationHint,
   describeMachine,
   describeVoice,
   IDrillRun,
   sessionLengthLabel,
+  TapSource,
 } from '../../engine/drill';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore';
+import { ICalibrationValue } from '../../engine/calibration';
 import { GlassButton, GlassContainer } from '../ui';
 import styles from './drill.module.css';
 
@@ -19,6 +22,8 @@ interface IDrillSummaryProps {
   onAgain: () => void;
   onRestore: (run: IDrillRun) => void;
   onRemove: (run: IDrillRun) => void;
+  onAdoptCalibration: (src: TapSource, offsetMs: number) => void;
+  calibration: Partial<Record<TapSource, ICalibrationValue | null>>;
   onBack: () => void;
 }
 
@@ -39,7 +44,18 @@ const Stat = ({ value, label }: { value: string; label: string }) => (
   </div>
 );
 
-export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBack }: IDrillSummaryProps) => {
+const sourceName = (src: TapSource) => (src === 'key' ? 'keyboard' : 'trackpad');
+
+export const DrillSummary = ({
+  run,
+  history,
+  onAgain,
+  onRestore,
+  onRemove,
+  onAdoptCalibration,
+  calibration,
+  onBack,
+}: IDrillSummaryProps) => {
   const [expanded, setExpanded] = useState<number | null>(run.at);
   const [showLegend, setShowLegend] = useState(false);
 
@@ -152,7 +168,32 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBac
                         label="raw (ms)"
                       />
                     </div>
-                    {hint && <p className={classnames(styles.note, styles.warn)}>{hint}</p>}
+                    {hint && (
+                      <div className={styles.hint}>
+                        <p className={classnames(styles.note, styles.warn)}>{hint}</p>
+                        <div className={styles.actions}>
+                          {adoptableOffsets(entry.summary).map((offset) => {
+                            const current = calibration[offset.src];
+                            const already =
+                              current && Math.abs(current.offsetMs - offset.medianMs) < 1 && current.manual;
+                            return (
+                              <button
+                                key={offset.src}
+                                type="button"
+                                className={styles.linkButton}
+                                disabled={Boolean(already)}
+                                onClick={() => onAdoptCalibration(offset.src, offset.medianMs)}
+                              >
+                                {already
+                                  ? sourceName(offset.src) + ' constant is ' + signed(offset.medianMs) + ' ms'
+                                  : 'Use ' + signed(offset.medianMs) + ' ms as the ' + sourceName(offset.src) +
+                                    ' constant (' + offset.n + ' taps)'}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                     <div className={styles.rigList}>
                       {rig.length ? (
                         rig.map((instrument) => (
