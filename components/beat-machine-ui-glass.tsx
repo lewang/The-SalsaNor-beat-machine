@@ -94,7 +94,12 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
     saveCalibration(next);
   };
 
-  const openDrill = () => setScreen('setup');
+  // The machine falls silent on the way into the drill: the session starts the transport itself, from the top
+  // of an eight-count, and nothing should be running underneath while the settings are chosen.
+  const openDrill = () => {
+    engine?.stop();
+    setScreen('setup');
+  };
 
   // Muting has to zero the gain as well as clear the flag, the same as a tile's own toggle: notes are already
   // scheduled seconds ahead and are on their way to the speakers regardless.
