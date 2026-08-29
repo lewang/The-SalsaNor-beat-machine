@@ -248,13 +248,10 @@ export function applyMachineSnapshot(machine: IMachine, snapshot: IMachineSnapsh
 }
 
 /** What was actually sounding, for reading a past run back. Entries stored before this predate the titles. */
-export function describeMachine(snapshot: IMachineSnapshot): string[] {
+export function describeMachine(snapshot: IMachineSnapshot): { name: string; program: string }[] {
   return snapshot.instruments
     .filter((instrument) => instrument.enabled)
-    .map((instrument) => {
-      const name = instrument.title || instrument.id;
-      return instrument.programTitle ? name + ' · ' + instrument.programTitle : name;
-    });
+    .map((instrument) => ({ name: instrument.title || instrument.id, program: instrument.programTitle }));
 }
 
 export interface IDrillSettings {

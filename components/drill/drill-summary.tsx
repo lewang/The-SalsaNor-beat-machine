@@ -7,6 +7,9 @@ import {
   IDrillRun,
   sessionLengthLabel,
 } from '../../engine/drill';
+import CloseIcon from '@mui/icons-material/Close';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore';
 import { GlassButton, GlassContainer } from '../ui';
 import styles from './drill.module.css';
 
@@ -38,6 +41,7 @@ const Stat = ({ value, label }: { value: string; label: string }) => (
 
 export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBack }: IDrillSummaryProps) => {
   const [expanded, setExpanded] = useState<number | null>(run.at);
+  const [showLegend, setShowLegend] = useState(false);
 
   // A finished session opens itself; whatever was open from browsing earlier ones gives way to it.
   useEffect(() => setExpanded(run.at), [run.at]);
@@ -45,7 +49,19 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBac
   return (
     <div className={styles.screen}>
       <div className={styles.head}>
-        <h2 className={styles.title}>Sessions</h2>
+        <h2 className={styles.title}>
+          Sessions{' '}
+          <button
+            type="button"
+            className={styles.info}
+            aria-label="What the numbers mean"
+            aria-expanded={showLegend}
+            title="What the numbers mean"
+            onClick={() => setShowLegend(!showLegend)}
+          >
+            <InfoOutlinedIcon />
+          </button>
+        </h2>
         <div className={styles.actions}>
           <GlassButton variant="primary" onClick={onAgain}>
             Again
@@ -56,6 +72,18 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBac
         </div>
       </div>
 
+      {showLegend && (
+        <GlassContainer className={styles.panel}>
+          <p className={styles.note}>
+            <b>On it</b> is taps inside an eighth of a beat; <b>drift</b> is the bias to correct on the next run, a
+            positive number meaning you are habitually behind the beat. <b>Spread</b> is how consistent you were
+            around your own bias, and is the one that shrinks with practice. <b>Raw</b> is the median over every
+            tap, strays included, so a constant input delay shows there even when nothing scored. Called beats you
+            let pass are not counted.
+          </p>
+        </GlassContainer>
+      )}
+
       <GlassContainer className={styles.panel}>
         <div className={styles.sessions}>
           {history.map((entry) => {
@@ -64,21 +92,43 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBac
             const rig = describeMachine(entry.machine);
             return (
               <div key={entry.at} className={classnames(styles.session, entry.at === run.at && styles.current)}>
-                <button
-                  type="button"
-                  className={styles.sessionHead}
-                  aria-expanded={open}
-                  onClick={() => setExpanded(open ? null : entry.at)}
-                >
-                  <span className={styles.chevron}>{open ? '▾' : '▸'}</span>
-                  <span className={styles.sessionWhen}>{when(entry.at)}</span>
-                  <span className={classnames(styles.mono, styles.sessionPattern)}>{entry.patternTitle}</span>
-                  <span className={styles.sessionSpec}>
-                    {sessionLengthLabel(entry.settings.seconds)} · voice {describeVoice(entry.settings.voice)} ·{' '}
-                    {entry.machine.bpm} BPM
-                  </span>
-                  <span className={styles.sessionRig}>{rig.join(', ') || 'nothing playing'}</span>
-                </button>
+                <div className={styles.sessionRow}>
+                  <button
+                    type="button"
+                    className={styles.sessionHead}
+                    aria-expanded={open}
+                    onClick={() => setExpanded(open ? null : entry.at)}
+                  >
+                    <span className={styles.chevron}>{open ? '▾' : '▸'}</span>
+                    <span className={styles.sessionWhen}>{when(entry.at)}</span>
+                    <span className={classnames(styles.mono, styles.sessionPattern)}>{entry.patternTitle}</span>
+                    <span className={styles.sessionSpec}>
+                      {sessionLengthLabel(entry.settings.seconds)} · voice {describeVoice(entry.settings.voice)} ·{' '}
+                      {entry.machine.bpm} BPM
+                    </span>
+                    <span className={styles.sessionRig}>
+                      {rig.length ? rig.length + (rig.length === 1 ? ' instrument' : ' instruments') : 'nothing playing'}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.rowIcon}
+                    aria-label="Restore this machine"
+                    title="Restore this machine"
+                    onClick={() => onRestore(entry)}
+                  >
+                    <SettingsBackupRestoreIcon />
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.rowIcon}
+                    aria-label="Remove this session"
+                    title="Remove this session"
+                    onClick={() => onRemove(entry)}
+                  >
+                    <CloseIcon />
+                  </button>
+                </div>
 
                 {open && (
                   <div className={styles.sessionBody}>
@@ -103,19 +153,17 @@ export const DrillSummary = ({ run, history, onAgain, onRestore, onRemove, onBac
                       />
                     </div>
                     {hint && <p className={classnames(styles.note, styles.warn)}>{hint}</p>}
-                    <p className={styles.note}>
-                      Drift is the bias to correct on the next run — a positive number means you are habitually
-                      behind the beat. Spread is how consistent you were around your own bias, and is the one that
-                      shrinks with practice. Raw is the median over every tap, strays included, so a constant input
-                      delay shows there even when nothing scored. Called beats you let pass are not counted.
-                    </p>
-                    <div className={styles.actions}>
-                      <button type="button" className={styles.linkButton} onClick={() => onRestore(entry)}>
-                        Restore this machine
-                      </button>
-                      <button type="button" className={styles.linkButton} onClick={() => onRemove(entry)}>
-                        Remove
-                      </button>
+                    <div className={styles.rigList}>
+                      {rig.length ? (
+                        rig.map((instrument) => (
+                          <div key={instrument.name} className={styles.rigLine}>
+                            <span className={styles.rigName}>{instrument.name}</span>
+                            <span className={styles.rigProgram}>{instrument.program || '—'}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className={styles.rigLine}>nothing playing</div>
+                      )}
                     </div>
                   </div>
                 )}
