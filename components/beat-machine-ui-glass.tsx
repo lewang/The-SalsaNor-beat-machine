@@ -4,7 +4,7 @@ import { observable } from 'mobx';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
 
-import { ClaveDirection } from '../engine/machine-interfaces';
+import { ClaveDirection, IMachine } from '../engine/machine-interfaces';
 import { useBeatEngine } from '../hooks/use-beat-engine';
 import { useWindowListener } from '../hooks/use-window-listener';
 import { GlassContainer, GlassButton, GlassSlider } from './ui';
@@ -30,9 +30,11 @@ import {
   loadCalibration,
   loadDrillHistory,
   loadDrillSettings,
+  loadInstrumentMixes,
   saveCalibration,
   saveDrillHistory,
   saveDrillSettings,
+  saveInstrumentMixes,
 } from '../engine/practice-storage';
 import { DrillSetup } from './drill/drill-setup';
 import { DrillScreen } from './drill/drill-screen';
@@ -54,6 +56,18 @@ export const INSTRUCTOR_LANGUAGES = [
 
 const KEY_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
+/** Enabling has to restore the gain as well as the flag, the same as a tile's own toggle does. */
+function applyMixIds(machine: IMachine, ids: string[] | undefined) {
+  if (!ids) {
+    return;
+  }
+  for (const instrument of machine.instruments) {
+    const on = ids.includes(instrument.id);
+    instrument.volume = on ? instrument.unmutedVolume : 0;
+    instrument.enabled = on;
+  }
+}
+
 export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassProps) => {
   const { salsa, merengue } = machines;
   const engine = useBeatEngine();
@@ -65,7 +79,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   const [drillHistory, setDrillHistory] = useState<IDrillRun[]>([]);
   const [lastRun, setLastRun] = useState<IDrillRun | null>(null);
   const [tunedAs, setTunedAs] = useState<IMachineSnapshot | null>(null);
-  const [lastMix, setLastMix] = useState<boolean[] | null>(null);
+  const [savedMixes, setSavedMixes] = useState<Record<string, string[]>>({});
   const allInstruments = useRef<HTMLInputElement>(null);
 
   // Both stores are per-browser, so they can only be read once there is a browser to read them from.
@@ -73,6 +87,10 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
     setCalibrationStore(loadCalibration());
     setDrillHistory(loadDrillHistory());
     setSettings(loadDrillSettings());
+    const mixes = loadInstrumentMixes();
+    setSavedMixes(mixes);
+    applyMixIds(machine, mixes[machine.flavor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // What you drilled last time is what the screen opens on, so a routine does not have to be rebuilt daily.
@@ -105,9 +123,6 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   // scheduled seconds ahead and are on their way to the speakers regardless.
   const cycleInstruments = () => {
     const enabled = machine.instruments.map((instrument) => instrument.enabled);
-    if (identifyMix(enabled, lastMix, defaultMix) === null) {
-      setLastMix(enabled);
-    }
     mixFor(nextMixChoice(enabled, lastMix, defaultMix), enabled, lastMix, defaultMix).forEach((on, index) => {
       const instrument = machine.instruments[index];
       instrument.volume = on ? instrument.unmutedVolume : 0;
@@ -182,13 +197,28 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   const defaultMix = (machine.flavor === 'Merengue' ? merengue : salsa).instruments.map(
     (instrument) => instrument.enabled,
   );
+  // Held by id, so the set comes back on the machine it was made for and is simply absent on the other.
+  const savedIds = savedMixes[machine.flavor];
+  const lastMix = savedIds ? machine.instruments.map((instrument) => savedIds.includes(instrument.id)) : null;
   const enabledNow = machine.instruments.map((instrument) => instrument.enabled);
   const playingCount = enabledNow.filter(Boolean).length;
   const mixChoice = identifyMix(enabledNow, lastMix, defaultMix);
-  const playingNames = machine.instruments
-    .filter((instrument) => instrument.enabled)
-    .map((instrument) => instrument.title)
-    .join(', ');
+
+  // A set that is none of the four is one you made yourself: remembered as soon as it exists, rather than
+  // when you happen to click away from it, so reloading does not lose it.
+  const mixSignature = enabledNow.join(',');
+  useEffect(() => {
+    if (identifyMix(enabledNow, lastMix, defaultMix) !== null) {
+      return;
+    }
+    const next = {
+      ...savedMixes,
+      [machine.flavor]: machine.instruments.filter((instrument) => instrument.enabled).map((i) => i.id),
+    };
+    setSavedMixes(next);
+    saveInstrumentMixes(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mixSignature, machine.flavor]);
 
   // Indeterminate is a property rather than an attribute, so React cannot set it from JSX.
   useEffect(() => {
@@ -328,7 +358,11 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
               <select
                 className={styles.settingDropdown}
                 value={machine.flavor}
-                onChange={(e) => setMachine(observable(e.target.value === 'Merengue' ? merengue : salsa))}
+                onChange={(e) => {
+                  const next = observable(e.target.value === 'Merengue' ? merengue : salsa);
+                  applyMixIds(next, savedMixes[next.flavor]);
+                  setMachine(next);
+                }}
               >
                 <option value="Salsa">Salsa</option>
                 <option value="Merengue">Merengue</option>
@@ -364,10 +398,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
               </label>
             )}
 
-            <label
-              className={`${styles.setting} ${styles.mixSetting}`}
-              title={playingCount ? 'Playing: ' + playingNames : 'Nothing playing'}
-            >
+            <label className={`${styles.setting} ${styles.mixSetting}`}>
               <span className={styles.settingLabel}>
                 {mixChoice ? MIX_LABELS[mixChoice] : MIX_LABELS.last} {playingCount}/{enabledNow.length}
               </span>

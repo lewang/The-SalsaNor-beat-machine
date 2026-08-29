@@ -5,6 +5,7 @@ import { CALIBRATION_HISTORY_MAX, ICalibrationRun } from './calibration';
 const CALIBRATION_KEY = 'bm-tap-calibration';
 const DRILL_HISTORY_KEY = 'bm-drill-history';
 const DRILL_SETTINGS_KEY = 'bm-drill-settings';
+const INSTRUMENT_MIX_KEY = 'bm-instrument-mix';
 const DRILL_HISTORY_MAX = 100;
 
 export interface IStoredCalibration {
@@ -62,6 +63,18 @@ export function clearCalibration() {
  * regimes became an on/off cycle in bars. The old alternating regime was sixteen beats each way, which is
  * four bars; the two that did not alternate both become a voice that is never held back.
  */
+/**
+ * The set of instruments last chosen by hand, kept per flavour and stored by instrument id rather than by
+ * position, so it survives a change to the machine's instrument list.
+ */
+export function loadInstrumentMixes(): Record<string, string[]> {
+  return read<Record<string, string[]>>(INSTRUMENT_MIX_KEY, {});
+}
+
+export function saveInstrumentMixes(mixes: Record<string, string[]>) {
+  write(INSTRUMENT_MIX_KEY, mixes);
+}
+
 export function loadDrillHistory(): IDrillRun[] {
   return read<IDrillRun[]>(DRILL_HISTORY_KEY, []).map((run) => {
     const legacy = run.settings as { minutes?: number | null; regime?: string };
