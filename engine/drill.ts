@@ -77,26 +77,13 @@ export function nearestTarget(targets: ITarget[], cycleBeats: number, beat: numb
 }
 
 /**
- * How far out a tap can be and still be read as aimed at its target. Half the smallest gap between targets,
- * because that is the point at which the next one becomes the better explanation -- a fixed half-beat would
- * call a tap 0.6 beats late a stray even on a pattern whose beats are four apart and nothing else is near.
+ * The window does not widen for a sparse pattern. Tapping the 1 and the 5 is not a licence to be loose about
+ * where they are: the standard is the same eighth of a beat whatever the pattern, and a constant delay is
+ * taken off by calibration rather than forgiven by a bigger target.
  */
-export function closeBeatsFor(targets: ITarget[], cycleBeats: number): number {
-  if (targets.length < 2) {
-    return Math.max(ON_BEATS, cycleBeats / 2);
-  }
-  const beats = targets.map((target) => target.beat).sort((a, b) => a - b);
-  let smallest = cycleBeats;
-  for (let i = 0; i < beats.length; i++) {
-    const next = i + 1 < beats.length ? beats[i + 1] : beats[0] + cycleBeats;
-    smallest = Math.min(smallest, next - beats[i]);
-  }
-  return Math.max(ON_BEATS, smallest / 2);
-}
-
-export function classifyTap(errBeats: number, closeBeats: number = CLOSE_BEATS): TapClass {
+export function classifyTap(errBeats: number): TapClass {
   const size = Math.abs(errBeats);
-  return size <= ON_BEATS ? 'on' : size <= closeBeats ? 'close' : 'stray';
+  return size <= ON_BEATS ? 'on' : size <= CLOSE_BEATS ? 'close' : 'stray';
 }
 
 /**
@@ -115,13 +102,7 @@ export function voiceSoundsAt(regime: VoiceRegime, sampleIndex: number): boolean
   return leg % 2 === 0;
 }
 
-export function gradeTap(
-  targets: ITarget[],
-  cycleBeats: number,
-  beat: number,
-  msPerBeat: number,
-  closeBeats: number,
-): ITap | null {
+export function gradeTap(targets: ITarget[], cycleBeats: number, beat: number, msPerBeat: number): ITap | null {
   const hit = nearestTarget(targets, cycleBeats, beat);
   if (!hit) {
     return null;
@@ -129,7 +110,7 @@ export function gradeTap(
   return {
     errBeats: hit.errBeats,
     errMs: hit.errBeats * msPerBeat,
-    cls: classifyTap(hit.errBeats, closeBeats),
+    cls: classifyTap(hit.errBeats),
     count: hit.count,
   };
 }
