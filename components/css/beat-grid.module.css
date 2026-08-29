@@ -1,0 +1,90 @@
+.scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.frame {
+  position: relative;
+  --cell: 26px;
+  --label: 92px;
+  width: calc(var(--label) + var(--cell) * var(--columns));
+  min-width: min-content;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: var(--label) repeat(var(--columns), var(--cell));
+  align-items: center;
+}
+
+.label {
+  padding-right: 10px;
+  text-align: right;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cell {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cell.beat {
+  border-left-color: rgba(255, 255, 255, 0.13);
+}
+
+.cell.bar {
+  border-left: 2px solid rgba(255, 255, 255, 0.26);
+}
+
+.head {
+  height: 20px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.28);
+  font-variant-numeric: tabular-nums;
+}
+
+.head.on {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+.hit {
+  border-radius: 50%;
+  background: #FFC947;
+}
+
+.hit.melodic {
+  border-radius: 3px;
+  width: 52%;
+  height: 30%;
+  background: rgba(255, 201, 71, 0.7);
+}
+
+/* The playhead is one element over the whole grid rather than a class on the column it is passing. */
+.track {
+  position: absolute;
+  inset: 0 0 0 var(--label);
+  pointer-events: none;
+}
+
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--cell);
+  background: rgba(74, 222, 128, 0.16);
+  border-left: 1px solid rgba(74, 222, 128, 0.5);
+}
+
+.empty {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 6px 2px;
+}

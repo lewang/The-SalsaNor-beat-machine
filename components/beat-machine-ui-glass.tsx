@@ -9,6 +9,7 @@ import { useBeatEngine } from '../hooks/use-beat-engine';
 import { useWindowListener } from '../hooks/use-window-listener';
 import { GlassContainer, GlassButton } from './ui';
 import { BeatIndicator } from './beat-indicator';
+import { BeatGrid } from './beat-grid';
 import { InstrumentTile } from './instrument-tile';
 import styles from './beat-machine-ui-glass.module.scss';
 import { IDefaultMachines } from './beat-machine-ui';
@@ -87,6 +88,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   const [savedMixes, setSavedMixes] = useState<Record<string, string[]>>({});
   const [customBpm, setCustomBpm] = useState(false);
   const [bpmText, setBpmText] = useState('');
+  const [showGrid, setShowGrid] = useState(false);
   const allInstruments = useRef<HTMLInputElement>(null);
 
   // Both stores are per-browser, so they can only be read once there is a browser to read them from.
@@ -97,6 +99,11 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
     const mixes = loadInstrumentMixes();
     setSavedMixes(mixes);
     applyMixIds(machine, mixes[machine.flavor]);
+    try {
+      setShowGrid(localStorage.getItem('bm-beat-grid') === 'on');
+    } catch (e) {
+      /* a browser that will not answer keeps the compact view */
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -489,7 +496,28 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
 
       {/* Beat Indicator */}
       <GlassContainer className={styles.beatIndicator}>
-        <BeatIndicator currentBeat={beatIndex} max={beatCount} />
+        {showGrid ? (
+          <BeatGrid machine={machine} engine={engine} />
+        ) : (
+          <BeatIndicator currentBeat={beatIndex} max={beatCount} />
+        )}
+        <button
+          type="button"
+          className={styles.gridToggle}
+          aria-pressed={showGrid}
+          title={showGrid ? 'Show the count on its own' : 'Show where every instrument hits'}
+          onClick={() => {
+            const next = !showGrid;
+            setShowGrid(next);
+            try {
+              localStorage.setItem('bm-beat-grid', next ? 'on' : 'off');
+            } catch (e) {
+              /* the view still changes, it just will not be remembered */
+            }
+          }}
+        >
+          {showGrid ? 'Counts only' : 'Show patterns'}
+        </button>
       </GlassContainer>
 
       {/* Instrument Grid */}
