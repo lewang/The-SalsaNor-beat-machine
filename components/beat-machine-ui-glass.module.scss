@@ -21,9 +21,11 @@
   flex-wrap: wrap;
 }
 
+/* Left-aligned with the buttons rather than pushed to the far edge: pinning it right opened a gap that grew
+   with the window and moved every control as it was resized. */
 .settingSelects {
-  margin-left: auto;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.625rem; // $spacing-2.5
   align-items: flex-end;
 }
