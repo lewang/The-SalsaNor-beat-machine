@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { observable } from 'mobx';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
 import StopIcon from '@mui/icons-material/Stop';
 
 import { ClaveDirection } from '../engine/machine-interfaces';
@@ -223,16 +222,13 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
     [machine, screen],
   );
 
-  const handlePlayPause = () => {
+  // The engine has no pause: stopping resets the grid so a restart begins on a 1. One button, two states.
+  const togglePlay = () => {
     if (engine?.playing) {
-      engine?.stop();
+      engine.stop();
     } else {
       engine?.play();
     }
-  };
-
-  const handleStop = () => {
-    engine?.stop();
   };
 
   if (screen !== 'machine' && engine) {
@@ -289,13 +285,11 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
         <div className={styles.controls}>
           <GlassButton
             variant="primary"
-            leftIcon={engine?.playing ? <PauseIcon /> : <PlayArrowIcon />}
-            onClick={handlePlayPause}
+            leftIcon={engine?.playing ? <StopIcon /> : <PlayArrowIcon />}
+            aria-label={engine?.playing ? 'Stop' : 'Play'}
+            onClick={togglePlay}
           >
-            {engine?.playing ? 'Pause' : 'Play'}
-          </GlassButton>
-          <GlassButton variant="ghost" leftIcon={<StopIcon />} onClick={handleStop}>
-            Stop
+            {engine?.playing ? 'Stop' : 'Play'}
           </GlassButton>
           <GlassButton variant="ghost" onClick={openDrill} disabled={!engine}>
             Drill
