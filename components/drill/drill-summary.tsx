@@ -44,7 +44,23 @@ const Stat = ({ value, label }: { value: string; label: string }) => (
   </div>
 );
 
-const sourceName = (src: TapSource) => (src === 'key' ? 'keyboard' : 'trackpad');
+const sourceName = (src: TapSource) => (src === 'key' ? 'Keyboard' : 'Trackpad');
+
+/** Says what is in force before it offers to change it, so adopting is a comparison rather than a leap. */
+function offerLabel(src: TapSource, offer: { medianMs: number; n: number }, current?: ICalibrationValue | null) {
+  const proposed = signed(offer.medianMs) + ' ms';
+  if (!current) {
+    return sourceName(src) + ': no constant — use ' + proposed + ' from these ' + offer.n + ' taps';
+  }
+  const held = signed(current.offsetMs) + ' ms';
+  const provenance = current.manual ? 'set by hand' : 'from ' + current.runs + (current.runs === 1 ? ' run' : ' runs');
+  if (Math.abs(current.offsetMs - offer.medianMs) < 1) {
+    return sourceName(src) + ': ' + held + ' ' + provenance + ' — these taps agree';
+  }
+  return (
+    sourceName(src) + ': ' + held + ' ' + provenance + ' — replace with ' + proposed + ' from these ' + offer.n + ' taps'
+  );
+}
 
 export const DrillSummary = ({
   run,
@@ -174,20 +190,16 @@ export const DrillSummary = ({
                         <div className={styles.actions}>
                           {adoptableOffsets(entry.summary).map((offset) => {
                             const current = calibration[offset.src];
-                            const already =
-                              current && Math.abs(current.offsetMs - offset.medianMs) < 1 && current.manual;
+                            const agrees = current && Math.abs(current.offsetMs - offset.medianMs) < 1;
                             return (
                               <button
                                 key={offset.src}
                                 type="button"
                                 className={styles.linkButton}
-                                disabled={Boolean(already)}
+                                disabled={Boolean(agrees)}
                                 onClick={() => onAdoptCalibration(offset.src, offset.medianMs)}
                               >
-                                {already
-                                  ? sourceName(offset.src) + ' constant is ' + signed(offset.medianMs) + ' ms'
-                                  : 'Use ' + signed(offset.medianMs) + ' ms as the ' + sourceName(offset.src) +
-                                    ' constant (' + offset.n + ' taps)'}
+                                {offerLabel(offset.src, offset, current)}
                               </button>
                             );
                           })}
