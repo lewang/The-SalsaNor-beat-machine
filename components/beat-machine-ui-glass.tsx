@@ -24,7 +24,7 @@ import {
   summarizeTaps,
 } from '../engine/drill';
 import { calibrationFor } from '../engine/calibration';
-import { mixStateOf, nextMix } from '../engine/machine-mix';
+import { identifyMix, MIX_LABELS, mixFor, nextMixChoice } from '../engine/machine-mix';
 import {
   IStoredCalibration,
   loadCalibration,
@@ -105,10 +105,10 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   // scheduled seconds ahead and are on their way to the speakers regardless.
   const cycleInstruments = () => {
     const enabled = machine.instruments.map((instrument) => instrument.enabled);
-    if (mixStateOf(enabled) === 'mixed') {
+    if (identifyMix(enabled, lastMix, defaultMix) === null) {
       setLastMix(enabled);
     }
-    nextMix(enabled, lastMix).forEach((on, index) => {
+    mixFor(nextMixChoice(enabled, lastMix, defaultMix), enabled, lastMix, defaultMix).forEach((on, index) => {
       const instrument = machine.instruments[index];
       instrument.volume = on ? instrument.unmutedVolume : 0;
       instrument.enabled = on;
@@ -179,14 +179,23 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   }, [engine, machine]);
 
   const hasClave = machine.instruments.some((instrument) => instrument.respectsClave);
-  const mix = mixStateOf(machine.instruments.map((instrument) => instrument.enabled));
+  const defaultMix = (machine.flavor === 'Merengue' ? merengue : salsa).instruments.map(
+    (instrument) => instrument.enabled,
+  );
+  const enabledNow = machine.instruments.map((instrument) => instrument.enabled);
+  const playingCount = enabledNow.filter(Boolean).length;
+  const mixChoice = identifyMix(enabledNow, lastMix, defaultMix);
+  const playingNames = machine.instruments
+    .filter((instrument) => instrument.enabled)
+    .map((instrument) => instrument.title)
+    .join(', ');
 
   // Indeterminate is a property rather than an attribute, so React cannot set it from JSX.
   useEffect(() => {
     if (allInstruments.current) {
-      allInstruments.current.indeterminate = mix === 'mixed';
+      allInstruments.current.indeterminate = playingCount > 0 && playingCount < enabledNow.length;
     }
-  }, [mix, screen]);
+  }, [playingCount, enabledNow.length, screen]);
   const beatCount = machine.flavor === 'Merengue' ? 4 : 8;
   const beatDivider = machine.flavor === 'Merengue' ? 2 : 1;
   const beatIndex = engine?.playing ? Math.round(0.5 + ((engine.beat / beatDivider) % beatCount)) : 0;
@@ -355,13 +364,19 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
               </label>
             )}
 
-            <label className={styles.setting} title="All instruments on, all off, then back to your last mix">
-              <span className={styles.settingLabel}>All</span>
+            <label
+              className={`${styles.setting} ${styles.mixSetting}`}
+              title={playingCount ? 'Playing: ' + playingNames : 'Nothing playing'}
+            >
+              <span className={styles.settingLabel}>
+                {mixChoice ? MIX_LABELS[mixChoice] : MIX_LABELS.last} {playingCount}/{enabledNow.length}
+              </span>
               <input
                 ref={allInstruments}
                 type="checkbox"
                 className={styles.settingCheckbox}
-                checked={mix === 'all'}
+                aria-label={'Instrument set: ' + (mixChoice ? MIX_LABELS[mixChoice] : MIX_LABELS.last)}
+                checked={playingCount === enabledNow.length}
                 onChange={cycleInstruments}
               />
             </label>

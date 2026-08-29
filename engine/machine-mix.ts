@@ -1,24 +1,78 @@
-export type MixState = 'all' | 'none' | 'mixed';
+export type MixChoice = 'last' | 'none' | 'all' | 'default';
 
-export function mixStateOf(enabled: boolean[]): MixState {
-  if (!enabled.length) {
-    return 'none';
+/** Your own set first, then the two extremes, then back to how the machine shipped. */
+export const MIX_CYCLE: MixChoice[] = ['last', 'none', 'all', 'default'];
+
+export const MIX_LABELS: Record<MixChoice, string> = {
+  last: 'last played',
+  none: 'all off',
+  all: 'all on',
+  default: 'default',
+};
+
+const same = (a: boolean[], b: boolean[]) => a.length === b.length && a.every((value, i) => value === b[i]);
+
+/** A remembered set is only worth a stop on the cycle while it still differs from the others. */
+function usable(remembered: boolean[] | null, enabled: boolean[], defaults: boolean[]): remembered is boolean[] {
+  if (!remembered || remembered.length !== enabled.length) {
+    return false;
   }
-  return enabled.every(Boolean) ? 'all' : enabled.some(Boolean) ? 'mixed' : 'none';
+  const allOn = enabled.map(() => true);
+  const allOff = enabled.map(() => false);
+  return !same(remembered, allOn) && !same(remembered, allOff) && !same(remembered, defaults);
+}
+
+export function mixFor(
+  choice: MixChoice,
+  enabled: boolean[],
+  remembered: boolean[] | null,
+  defaults: boolean[],
+): boolean[] {
+  if (choice === 'none') {
+    return enabled.map(() => false);
+  }
+  if (choice === 'all') {
+    return enabled.map(() => true);
+  }
+  if (choice === 'default') {
+    return [...defaults];
+  }
+  return usable(remembered, enabled, defaults) ? [...remembered] : [...defaults];
 }
 
 /**
- * Your mix, then all off, then all on, and round again. A remembered mix that is no longer actually a mix is
- * no use as a third state, so it is skipped rather than repeating one of the other two.
+ * Which of the four the machine is currently sitting on, or null when it is a set you made by hand — which is
+ * itself the "last played" one, so a click from there moves on to the next in the cycle.
  */
-export function nextMix(enabled: boolean[], remembered: boolean[] | null): boolean[] {
-  const state = mixStateOf(enabled);
-  if (state === 'mixed') {
-    return enabled.map(() => false);
+export function identifyMix(enabled: boolean[], remembered: boolean[] | null, defaults: boolean[]): MixChoice | null {
+  if (enabled.every(Boolean)) {
+    return 'all';
   }
-  if (state === 'none') {
-    return enabled.map(() => true);
+  if (!enabled.some(Boolean)) {
+    return 'none';
   }
-  const usable = remembered && remembered.length === enabled.length && mixStateOf(remembered) === 'mixed';
-  return usable ? [...remembered] : enabled.map(() => false);
+  if (same(enabled, defaults)) {
+    return 'default';
+  }
+  if (remembered && same(enabled, remembered)) {
+    return 'last';
+  }
+  return null;
+}
+
+export function nextMixChoice(
+  enabled: boolean[],
+  remembered: boolean[] | null,
+  defaults: boolean[],
+): MixChoice {
+  const current = identifyMix(enabled, remembered, defaults) ?? 'last';
+  const from = MIX_CYCLE.indexOf(current);
+  for (let step = 1; step <= MIX_CYCLE.length; step++) {
+    const candidate = MIX_CYCLE[(from + step) % MIX_CYCLE.length];
+    if (candidate === 'last' && !usable(remembered, enabled, defaults)) {
+      continue;
+    }
+    return candidate;
+  }
+  return 'default';
 }

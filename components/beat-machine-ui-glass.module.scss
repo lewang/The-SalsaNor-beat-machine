@@ -113,11 +113,50 @@
   padding: 0.5rem !important; // Minimal padding så tools kan være i hjørnet
 }
 
+/* Boxed like the dropdowns beside it, so the row of settings sits on one baseline and reads as one control
+   family. Empty is nothing playing, a filled square is everything, a bar is some of it. */
 .settingCheckbox {
-  width: 1.75rem;
-  height: 1.75rem;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.9375rem;
+  height: 1.9375rem;
   margin: 0;
-  accent-color: #FFC947;
+  display: grid;
+  place-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
   cursor: pointer;
-  align-self: flex-start;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-golden);
+    outline-offset: 2px;
+  }
+
+  &::after {
+    content: '';
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 2px;
+    background: transparent;
+  }
+
+  &:checked::after {
+    background: #FFC947;
+  }
+
+  &:indeterminate::after {
+    height: 2px;
+    border-radius: 1px;
+    background: #FFC947;
+  }
+}
+
+/* The caption changes as the set does, so the slot is held wide enough for the longest of them. */
+.mixSetting {
+  min-width: 6.75rem;
 }
