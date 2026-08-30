@@ -14,10 +14,15 @@
 .grid {
   display: grid;
   grid-template-columns: var(--label) repeat(var(--columns), var(--cell));
-  align-items: center;
+  /* Cells fill their row and centre their own contents. Centring the cells instead lets any row that is
+     taller than a cell leave them each to settle where they like, and they do not all settle alike. */
+  align-items: stretch;
 }
 
 .label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   padding-right: 10px;
   text-align: right;
   font-size: 12px;
@@ -28,19 +33,23 @@
 }
 
 .cell {
-  height: 24px;
+  min-height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* The metre is carried by the columns rather than by the marks, so a stroke on the count reads differently
+   from one on the "and" without the mark having to mean two things at once. Only the downbeats are washed:
+   shading every numbered column turned the whole grid into stripes and emphasised nothing. */
 .cell.beat {
-  border-left-color: rgba(255, 255, 255, 0.13);
+  border-left-color: rgba(255, 255, 255, 0.16);
 }
 
 .cell.bar {
-  border-left: 2px solid rgba(255, 255, 255, 0.26);
+  border-left: 1px solid rgba(255, 201, 71, 0.45);
+  background: rgba(255, 201, 71, 0.07);
 }
 
 .head {
@@ -55,15 +64,21 @@
   font-weight: 600;
 }
 
+.head.bar {
+  color: #FFC947;
+}
+
 .hit {
   border-radius: 50%;
   background: #FFC947;
 }
 
+/* Fixed rather than a share of the cell: a percentage of a stretched cell puts marks at different heights
+   depending on how tall their row happens to be. */
 .hit.melodic {
   border-radius: 3px;
-  width: 52%;
-  height: 30%;
+  width: 13px;
+  height: 7px;
   background: rgba(255, 201, 71, 0.7);
 }
 

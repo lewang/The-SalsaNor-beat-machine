@@ -162,6 +162,12 @@ export class BeatEngine {
         observe(instrument, 'activeProgram', () => this.rescheduleInstrument(instrument, newPlayer)),
         // Without this the counts already queued keep speaking the old language for as long as the lookahead.
         observe(instrument, 'language', () => this.rescheduleInstrument(instrument, newPlayer)),
+        /*
+         * Silencing an instrument only drops its gain, so the notes queued while it was off were never
+         * scheduled and its part came back with a hole in it the length of the mute, a lookahead later.
+         * Rescheduling on the way back in fills those indices from now.
+         */
+        observe(instrument, 'enabled', () => this.rescheduleInstrument(instrument, newPlayer)),
       );
       this.instrumentPlayers.set(instrument, newPlayer);
       return newPlayer;
