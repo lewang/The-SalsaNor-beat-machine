@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import { withBasePath } from '../services/base-path';
 import styles from './404.module.css';
 
 export default function Error404() {
@@ -10,8 +11,8 @@ export default function Error404() {
         <title>Not Found - Salsa Beat Lab 🎼🎹</title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" type="image/x-icon" href="favicon.ico" />
-        <link rel="manifest" href="manifest.json" />
+        <link rel="icon" type="image/x-icon" href={withBasePath('/favicon.ico')} />
+        <link rel="manifest" href={withBasePath('/manifest.json')} />
         <meta name="theme-color" content="#1976d2" />
         <meta
           name="description"
