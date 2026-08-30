@@ -256,7 +256,22 @@
 					<bm:Note index='29' pitch='5' />
 					<bm:Note index='31' pitch='0' pianoTonic="true" />
 				</bm:Program>
-				<bm:Program claveSwap="true" clave="2-3" title="Montuno I-IV-V-IV" length='16'>
+				<bm:Program clave="3-2" title="Montuno I-IV-V-IV" length='16'>
+					<bm:Note index='1' pitch='4' />
+					<bm:Note index='1' pitch='7' />
+					<bm:Note index='3' pitch='5' pianoTonic="true" />
+					<bm:Note index='5' pitch='9' />
+					<bm:Note index='5' pitch='12' />
+					<bm:Note index='7' pitch='7' pianoTonic="true" />
+					<bm:Note index='8' pitch='7' pianoTonic="true" />
+					<bm:Note index='10' pitch='11' />
+					<bm:Note index='10' pitch='14' />
+					<bm:Note index='11' pitch='7' pianoTonic="true" />
+					<bm:Note index='13' pitch='5' />
+					<bm:Note index='13' pitch='9' />
+					<bm:Note index='15' pitch='0' pianoTonic="true" />
+				</bm:Program>
+				<bm:Program clave="2-3" title="Montuno I-IV-V-IV" length='16'>
 					<bm:Note index='0' pitch='0' pianoTonic="true" />
 					<bm:Note index='2' pitch='4' />
 					<bm:Note index='2' pitch='7' />
@@ -564,7 +579,22 @@
 					<bm:Note index='15' pitch='8' />
 				</bm:Program>
 
-				<bm:Program claveSwap="true" clave="2-3" title="Montuno I-V-V-I" length='16'>
+				<bm:Program clave="3-2" title="Montuno I-V-V-I" length='16'>
+					<bm:Note index='1' pitch='4' />
+					<bm:Note index='1' pitch='7' />
+					<bm:Note index='3' pitch='-5' pianoTonic="true" />
+					<bm:Note index='5' pitch='11' />
+					<bm:Note index='5' pitch='14' />
+					<bm:Note index='7' pitch='-5' pianoTonic="true" />
+					<bm:Note index='8' pitch='-5' pianoTonic="true" />
+					<bm:Note index='10' pitch='11' />
+					<bm:Note index='10' pitch='14' />
+					<bm:Note index='11' pitch='7' pianoTonic="true" />
+					<bm:Note index='13' pitch='4' />
+					<bm:Note index='13' pitch='7' />
+					<bm:Note index='15' pitch='0' pianoTonic="true" />
+				</bm:Program>
+				<bm:Program clave="2-3" title="Montuno I-V-V-I" length='16'>
 					<bm:Note index='0' pitch='0' pianoTonic="true" />
 					<bm:Note index='2' pitch='4' />
 					<bm:Note index='2' pitch='7' />

@@ -61,6 +61,16 @@ export function programVisibleIn(program: IProgram, direction: ClaveDirection): 
  * has moved away from it: dropping it would silently change what you are hearing, and the pattern's own
  * name beside a clave it was not written for says enough.
  */
+/*
+ * How a pattern is named in the list. One being played in a direction it was not written for is standing
+ * in for a transcription nobody has made yet — the rhythm is the documented swap, the harmony is this
+ * library's own reading — so it says so rather than passing itself off as the real figure.
+ */
+export function programLabel(program: IProgram, direction: ClaveDirection): string {
+  const derived = program.clave && program.claveSwap && program.clave !== direction;
+  return derived ? `${program.title} ~` : program.title;
+}
+
 export function visibleProgramIndices(instrument: IInstrument, direction: ClaveDirection): number[] {
   const visible = instrument.programs
     .map((program, index) => (programVisibleIn(program, direction) ? index : -1))

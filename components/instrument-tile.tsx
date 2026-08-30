@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useState, useEffect, useRef } from 'react';
 import { ClaveDirection, IInstrument } from '../engine/machine-interfaces';
-import { visibleProgramIndices } from '../engine/clave-direction';
+import { programLabel, visibleProgramIndices } from '../engine/clave-direction';
 import styles from './css/instrument-tile.module.css';
 import SettingsIcon from '@mui/icons-material/Settings';
 import VolumeIcon from '@mui/icons-material/VolumeUp';
@@ -122,7 +122,7 @@ export const InstrumentTile = observer((props: IInstrumentTileProps) => {
           {/* The patterns written for this direction, and whichever is already playing. */}
           {visibleProgramIndices(instrument, claveDirection).map((index) => (
             <MenuItem key={instrument.programs[index].title} value={index}>
-              {instrument.programs[index].title}
+              {programLabel(instrument.programs[index], claveDirection)}
             </MenuItem>
           ))}
         </Select>
