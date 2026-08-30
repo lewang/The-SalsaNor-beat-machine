@@ -228,6 +228,34 @@
 			<leftHandPitchOffset>48</leftHandPitchOffset>
 			<keyedInstrument>true</keyedInstrument>
 			<programs>
+				<bm:Program claveSwap="true" clave="3-2" title="Montuno i-i-vii-vii" length='32'>
+					<bm:Note index='1' pitch='3' />
+					<bm:Note index='1' pitch='7' />
+					<bm:Note index='3' pitch='-2' pianoTonic="true" />
+					<bm:Note index='5' pitch='3' />
+					<bm:Note index='5' pitch='7' />
+					<bm:Note index='7' pitch='0' pianoTonic="true" />
+					<bm:Note index='8' pitch='0' pianoTonic="true" />
+					<bm:Note index='10' pitch='3' />
+					<bm:Note index='10' pitch='7' />
+					<bm:Note index='11' pitch='-2' pianoTonic="true" />
+					<bm:Note index='13' pitch='3' />
+					<bm:Note index='13' pitch='7' />
+					<bm:Note index='15' pitch='-2' pianoTonic="true" />
+					<bm:Note index='17' pitch='2' />
+					<bm:Note index='17' pitch='5' />
+					<bm:Note index='19' pitch='-4' pianoTonic="true" />
+					<bm:Note index='21' pitch='2' />
+					<bm:Note index='21' pitch='5' />
+					<bm:Note index='23' pitch='-2' pianoTonic="true" />
+					<bm:Note index='24' pitch='-2' pianoTonic="true" />
+					<bm:Note index='26' pitch='2' />
+					<bm:Note index='26' pitch='5' />
+					<bm:Note index='27' pitch='-4' pianoTonic="true" />
+					<bm:Note index='29' pitch='2' />
+					<bm:Note index='29' pitch='5' />
+					<bm:Note index='31' pitch='0' pianoTonic="true" />
+				</bm:Program>
 				<bm:Program claveSwap="true" clave="2-3" title="Montuno I-IV-V-IV" length='16'>
 					<bm:Note index='0' pitch='0' pianoTonic="true" />
 					<bm:Note index='2' pitch='4' />
