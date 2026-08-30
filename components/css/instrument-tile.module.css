@@ -164,3 +164,14 @@
   }
 }
 
+
+/* Says what a stand-in is, where you can see it while it plays — the list label is truncated once chosen. */
+.generated {
+  margin-top: 4px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: #FFC947;
+  opacity: 0.85;
+  text-align: center;
+  cursor: help;
+}

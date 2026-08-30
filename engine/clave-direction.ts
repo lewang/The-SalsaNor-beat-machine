@@ -66,9 +66,12 @@ export function programVisibleIn(program: IProgram, direction: ClaveDirection): 
  * in for a transcription nobody has made yet — the rhythm is the documented swap, the harmony is this
  * library's own reading — so it says so rather than passing itself off as the real figure.
  */
+export function isGenerated(program: IProgram, direction: ClaveDirection): boolean {
+  return Boolean(program.clave && program.claveSwap && program.clave !== direction);
+}
+
 export function programLabel(program: IProgram, direction: ClaveDirection): string {
-  const derived = program.clave && program.claveSwap && program.clave !== direction;
-  return derived ? `${program.title} ~` : program.title;
+  return isGenerated(program, direction) ? `${program.title} (generated)` : program.title;
 }
 
 export function visibleProgramIndices(instrument: IInstrument, direction: ClaveDirection): number[] {

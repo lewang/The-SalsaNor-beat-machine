@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useState, useEffect, useRef } from 'react';
 import { ClaveDirection, IInstrument } from '../engine/machine-interfaces';
-import { programLabel, visibleProgramIndices } from '../engine/clave-direction';
+import { isGenerated, programLabel, visibleProgramIndices } from '../engine/clave-direction';
 import styles from './css/instrument-tile.module.css';
 import SettingsIcon from '@mui/icons-material/Settings';
 import VolumeIcon from '@mui/icons-material/VolumeUp';
@@ -127,6 +127,11 @@ export const InstrumentTile = observer((props: IInstrumentTileProps) => {
           ))}
         </Select>
       </FormControl>
+      {isGenerated(instrument.programs[instrument.activeProgram], claveDirection) && (
+        <div className={styles.generated} title="The rhythm is the documented measure swap; the harmony is this app's own reading. No recording of this pattern in this direction has been transcribed.">
+          generated, not transcribed
+        </div>
+      )}
       <div className={styles.volume}>
         <VolumeIcon className={styles.volumeIcon} />
         <Slider
