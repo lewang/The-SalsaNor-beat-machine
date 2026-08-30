@@ -145,7 +145,10 @@ def snap(notes):
         return []
     best, score = None, -1.0
     for root in range(40, 90):
-        shapes = [[root - 12, root, root + 12]]
+        # a plain note doubled below, the same doubled above as well, or a dyad each of whose notes is
+        # doubled below. The first is easy to miss: a single-line montuno like Shula is mostly those, and
+        # without it every one of them gets an octave it never had.
+        shapes = [[root - 12, root], [root - 12, root, root + 12]]
         shapes += [[root + third - 12, root + 7 - 12, root + third, root + 7] for third in (3, 4)]
         for shape in shapes:
             s = len(set(shape) & set(notes)) - 0.34 * len(set(shape) ^ set(notes))
@@ -175,7 +178,10 @@ def read_notes(events, occurrences, cycles, tol=0.055):
 def to_program(rows, title, length, clave, swap):
     """Emit the XML. A doubled root becomes one pianoTonic note; a dyad becomes its two upper notes,
     since playBothHands supplies the octave below."""
-    attrs = f'{"claveSwap=\"true\" " if swap else ""}clave="{clave}" title="{title}" length=\'{length}\''
+    # several patterns are named after tunes and carry double quotes of their own, so the title is
+    # single-quoted when it has to be — otherwise the attribute closes early and the file will not parse
+    named = f"'{title}'" if '"' in title else f'"{title}"'
+    attrs = f'{"claveSwap=\"true\" " if swap else ""}clave="{clave}" title={named} length=\'{length}\''
     out = [f'\t\t\t\t<bm:Program {attrs}>']
     for slot in sorted(rows):
         midis = rows[slot]
