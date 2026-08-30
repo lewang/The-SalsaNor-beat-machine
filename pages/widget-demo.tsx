@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { observable } from 'mobx';
 import { useMachine } from '../hooks/use-machine';
@@ -60,8 +61,8 @@ export default function WidgetDemo() {
       <div style={containerStyle}>
         <div style={wrapperStyle}>
           <nav style={navStyle}>
-            <a href="/" style={navLinkStyle}>🏠 Main App</a>
-            <a href="/docs" style={navLinkStyle}>📚 Documentation</a>
+            <Link href="/" style={navLinkStyle}>🏠 Main App</Link>
+            <Link href="/docs" style={navLinkStyle}>📚 Documentation</Link>
           </nav>
 
           <h1 style={titleStyle}>🎵 Salsa Beat Lab Widget Demo</h1>
@@ -176,7 +177,7 @@ export default function WidgetDemo() {
           <div style={footerStyle}>
             <p style={{ margin: '1rem 0' }}>
               <strong>Need help?</strong> Check out the{' '}
-              <a href="/docs" style={linkStyle}>full documentation</a>.
+              <Link href="/docs" style={linkStyle}>full documentation</Link>.
             </p>
             <p style={{ margin: '1rem 0', fontSize: '0.875rem', opacity: 0.7 }}>
               Powered by Salsa Beat Lab · <a href="https://beat.salsanor.no" style={linkStyle}>beat.salsanor.no</a>

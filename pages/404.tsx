@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import styles from './404.module.css';
 
 export default function Error404() {
@@ -30,7 +31,7 @@ export default function Error404() {
       <div className={styles.page}>
         <h1>Page Not Found (404)</h1>
 
-        <a href="/">Take me 🏠</a>
+        <Link href="/">Take me 🏠</Link>
       </div>
     </>
   );

@@ -1,5 +1,6 @@
 import { ServerStyleSheets } from '@mui/styles';
 import Document, { Html, Head, Main, NextScript, DocumentContext } from 'next/document';
+import { withBasePath } from '../services/base-path';
 
 export default class MyDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
@@ -28,7 +29,7 @@ export default class MyDocument extends Document {
       <Html lang="en">
         <Head>
           <link href="https://fonts.googleapis.com/css?family=Merriweather:300&display=swap" rel="stylesheet" />
-          <link rel="icon" href="/favicon.ico" />
+          <link rel="icon" href={withBasePath('/favicon.ico')} />
         </Head>
         <body>
           <Main />

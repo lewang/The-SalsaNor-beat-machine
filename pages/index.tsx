@@ -1,8 +1,10 @@
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 import { BeatMachineUIGlass } from '../components/beat-machine-ui-glass';
 import { loadMachine } from '../services/load-machine';
 import type { IDefaultMachines } from '../components/beat-machine-ui';
+import { withBasePath } from '../services/base-path';
 import styles from './index.module.scss';
 
 interface IHomeProps {
@@ -16,8 +18,8 @@ export default function Home({ machines }: IHomeProps) {
         <meta charSet="utf-8" />
         <title>Salsa Beat Lab 🎼🎹</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" type="image/x-icon" href={withBasePath('/favicon.ico')} />
+        <link rel="manifest" href={withBasePath('/manifest.json')} />
         <meta name="theme-color" content="#FF9933" />
         <meta
           name="description"
@@ -43,9 +45,9 @@ export default function Home({ machines }: IHomeProps) {
         </div>
 
         <div className={styles.linkBar}>
-          <a href="/docs" className={styles.link}>
+          <Link href="/docs" className={styles.link}>
             📚 Documentation
-          </a>
+          </Link>
         </div>
 
         <footer className={styles.footer}>
