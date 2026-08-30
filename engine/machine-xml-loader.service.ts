@@ -66,9 +66,12 @@ export class MachineXMLLoader {
   }
 
   loadProgram(element: Element): IProgram {
+    // Only patterns the engine cannot rotate carry this; anything else is agnostic and says nothing.
+    const clave = element.getAttribute('clave');
     return {
       title: element.getAttribute('title') || '',
       length: parseInt(element.getAttribute('length')!, 10) || 0,
+      ...(clave === '2-3' || clave === '3-2' ? { clave } : {}),
       notes: this.childElements(element)
         .filter((node) => node.namespaceURI === this.NS_BEAT_MACHINE && node.localName === 'Note')
         .map((noteElement) => ({

@@ -26,6 +26,7 @@ import {
   summarizeTaps,
 } from '../engine/drill';
 import { calibrationFor } from '../engine/calibration';
+import { crossedParts } from '../engine/clave-direction';
 import { identifyMix, MIX_LABELS, mixFor, nextMixChoice } from '../engine/machine-mix';
 import {
   IStoredCalibration,
@@ -232,6 +233,9 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
   };
 
   const hasClave = machine.instruments.some((instrument) => instrument.respectsClave);
+  // Turning the clave around rotates the percussion but not the montuno, which is written to one
+  // direction and cannot be rotated without its harmony travelling too. Say so rather than play it silently.
+  const crossed = crossedParts(machine);
   const defaultMix = (machine.flavor === 'Merengue' ? merengue : salsa).instruments.map(
     (instrument) => instrument.enabled,
   );
@@ -475,6 +479,13 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
                   <option value="3-2">3-2</option>
                 </select>
               </label>
+            )}
+
+            {crossed.length > 0 && (
+              <span className={styles.crossed} role="status">
+                crossed: {crossed.map((instrument) => instrument.title).join(', ')} written for{' '}
+                {machine.claveDirection === '2-3' ? '3-2' : '2-3'}
+              </span>
             )}
 
             <label className={`${styles.setting} ${styles.mixSetting}`}>

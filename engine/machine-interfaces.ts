@@ -10,6 +10,9 @@ export interface IProgram {
   title: string;
   length: number;
   notes: INote[];
+  /* The direction this pattern was written in, for parts the engine cannot rotate. Absent where the
+     pattern is direction-agnostic, and absent where nobody has judged it yet — see programDirection. */
+  clave?: ClaveDirection;
 }
 
 export interface IInstrument {

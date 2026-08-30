@@ -177,3 +177,15 @@
 .mixSetting {
   min-width: 6.75rem;
 }
+
+/* Rides beside the clave dropdown, where the choice that causes it is made. */
+.crossed {
+  align-self: flex-end;
+  padding: 0.375rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 201, 71, 0.45);
+  background: rgba(255, 201, 71, 0.1);
+  color: #FFC947;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+}
