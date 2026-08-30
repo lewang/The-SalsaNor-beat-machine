@@ -12,7 +12,6 @@
 **Key Requirements:**
 - Serve static HTML/CSS/JS
 - Host audio files (WebM/MP3)
-- Support CORS for cross-domain widget embedding
 - Fast content delivery for audio samples
 
 ---
@@ -58,7 +57,7 @@ export default nextConfig;
 
 **.htaccess (for Apache):**
 ```apache
-# Enable CORS for widget embedding
+# Enable CORS for cross-domain asset loading
 <IfModule mod_headers.c>
     Header set Access-Control-Allow-Origin "*"
     Header set Access-Control-Allow-Methods "GET, OPTIONS"
@@ -366,8 +365,6 @@ DNS Settings (in ProISP or domain registrar):
 Wait for DNS propagation (5-60 minutes)
 ```
 
-#### Phase 5: Test CORS for Widget
-```bash
 # Test from browser console on different domain
 fetch('https://beat.salsanor.no/assets/audio/main.json')
   .then(r => r.json())
@@ -411,7 +408,7 @@ fetch('https://beat.salsanor.no/assets/audio/main.json')
 
 ### Issue 5: CORS Errors
 
-**Problem:** Widget doesn't load from other domains  
+**Problem:** Assets fail to load from another domain  
 **Solution:**  
 - Add `.htaccess` CORS headers (see above)
 - Test with browser dev tools
@@ -441,7 +438,6 @@ fetch('https://beat.salsanor.no/assets/audio/main.json')
 2. Upload `out/` folder to ProISP via cPanel File Manager
 3. Add `.htaccess` with CORS headers
 4. Point DNS to ProISP server
-5. Test widget embedding from salsanor.no
 
 **Pros:** Simple, cheap, works everywhere  
 **Cons:** Manual updates required

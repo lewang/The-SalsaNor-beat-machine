@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3009",
     "fetch:audio": "node scripts/fetch-audio-bank.mjs",
-    "build": "npm run build:widget && next build && npm run postbuild",
-    "build:widget": "vite build",
+    "build": "next build && npm run postbuild",
     "postbuild": "cp -r public/assets out/ 2>/dev/null || true && mkdir -p out/_next/static && cp -r .next/static/css .next/static/chunks .next/static/*/ out/_next/static/ 2>/dev/null || true",
     "start": "next start",
     "deploy": "npm run build",
@@ -45,7 +44,6 @@
     "@types/xmldom": "^0.1.34",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
-    "@vitejs/plugin-react": "^5.1.2",
     "eslint": "^9.27.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-import": "^2.31.0",
@@ -53,8 +51,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "sass": "^1.69.5",
-    "typescript": "^5.8.3",
-    "vite": "^7.3.1"
+    "typescript": "^5.8.3"
   },
   "overrides": {
     "@rushstack/eslint-patch": "1.10.0"

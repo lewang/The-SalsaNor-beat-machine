@@ -32,8 +32,6 @@ The `out/` folder contains:
 ```
 out/
 ├── index.html              # Main page
-├── widget-generator.html   # Widget generator page
-├── widget-demo.html        # Widget demo page
 ├── 404.html               # 404 error page
 ├── _next/                 # Next.js assets (CSS, JS)
 │   ├── static/
@@ -106,7 +104,7 @@ scp public/.htaccess user@host:/path/to/public_html/.htaccess
 
 The `.htaccess` file in `public/` folder provides:
 
-✅ **CORS headers** - Required for widget embedding  
+✅ **CORS headers** - Required for cross-domain asset loading  
 ✅ **Compression** - Reduces bandwidth by ~60%  
 ✅ **Caching** - Faster load times (1 year for audio, 1 hour for HTML)  
 ✅ **Security headers** - XSS protection, clickjacking prevention  
@@ -150,35 +148,6 @@ Open browser console (F12) and check:
 - No 404 errors for audio files
 - `main.json` loads correctly
 - Audio plays when clicking instruments
-
-### 3. Test CORS for Widget
-
-From a different domain (e.g., `salsanor.no`), run in console:
-
-```javascript
-fetch('https://beat.salsanor.no/assets/audio/main.json')
-  .then(r => r.json())
-  .then(data => console.log('CORS working!', Object.keys(data).length + ' audio samples'))
-  .catch(err => console.error('CORS error:', err));
-```
-
-Should print: `CORS working! 227 audio samples`
-
-### 4. Test Widget Embedding
-
-On `salsanor.no`, add this HTML:
-
-```html
-<div data-beat-widget 
-     data-instruments="clave,cowbell" 
-     data-bpm="120"></div>
-<script src="https://beat.salsanor.no/widget.js"></script>
-<script>
-  window.BeatMachineWidget.setBaseUrl('https://beat.salsanor.no');
-</script>
-```
-
-Widget should load and play audio.
 
 ## 🔄 Updating the Site
 
@@ -231,7 +200,6 @@ Modern browsers support WebM. To reduce size, consider removing MP3:
 **Solution:**
 - Verify `index.html` exists in web root
 - Check file permissions (644)
-- Ensure trailing slashes in URLs: `/widget-generator/`
 
 ### Issue: Audio doesn't play
 
@@ -240,14 +208,6 @@ Modern browsers support WebM. To reduce size, consider removing MP3:
 - Verify `.htaccess` is uploaded and active
 - Check server error logs in cPanel
 - Test audio URL directly: `https://beat.salsanor.no/assets/audio/main.webm`
-
-### Issue: Widget doesn't load on other domains
-
-**Cause:** CORS headers missing  
-**Solution:**
-- Verify `.htaccess` CORS headers are active
-- Test with `curl -I` command
-- Check browser console for CORS errors
 
 ### Issue: Site works locally but not on server
 
@@ -301,7 +261,6 @@ Check cPanel error logs for:
 
 Add Google Analytics or similar to track:
 - Page views
-- Widget embeds
 - Audio plays
 - Geographic distribution
 

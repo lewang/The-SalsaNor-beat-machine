@@ -1,26 +1,19 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-      {
-        "label": "dev",
-        "type": "npm",
-        "script": "dev",
-        "group": "build",
-        "problemMatcher": []
-      },
-      {
-        "label": "build",
-        "type": "npm",
-        "script": "build",
-        "group": "build",
-        "problemMatcher": []
-      },
-      {
-        "label": "vite-bundle",
-        "type": "npm",
-        "script": "bundle",
-        "detail": "Bygg standalone-widgeten til WordPress"
-      }
-    ]
-  }
-  
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev",
+      "type": "npm",
+      "script": "dev",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "build",
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
