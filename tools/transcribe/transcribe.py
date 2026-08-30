@@ -73,10 +73,20 @@ def flux_of(mag):
 
 
 def peaks_of(flux, rel=0.20):
+    """Attacks are a small share of frames, so the scale comes from a high quantile rather than the
+    maximum: one loud transient — a tap on the phone, the recording starting — would otherwise set the
+    scale and push every real attack under the threshold."""
     floor = np.percentile(flux, 60)
-    cut = floor + (flux.max() - floor) * rel
-    return np.array([i for i in range(2, len(flux) - 2)
-                     if flux[i] >= cut and flux[i] == max(flux[i - 2:i + 3])])
+    top = np.percentile(flux, 98)
+    cut = floor + max(top - floor, 1e-6) * rel
+    found = [i for i in range(2, len(flux) - 2)
+             if flux[i] >= cut and flux[i] == max(flux[i - 2:i + 3])]
+    if not found:
+        return np.array([], dtype=int)
+    # The attacks of a loop are of a piece; one an order of magnitude weaker is a decay or a room noise,
+    # not a stroke. Judged against the peaks actually found rather than against the whole signal.
+    strong = np.median([flux[i] for i in found]) * 0.4
+    return np.array([i for i in found if flux[i] >= strong])
 
 
 def fit_phase(times, step):
@@ -169,10 +179,12 @@ def to_program(rows, title, length, clave, swap):
     out = [f'\t\t\t\t<bm:Program {attrs}>']
     for slot in sorted(rows):
         midis = rows[slot]
+        # playBothHands supplies the lower octave, so only the upper half of a shape is written. Which
+        # notes those are follows from the shape, not from a pitch threshold: a dyad can straddle middle C.
         if len(midis) == 3 and midis[1] - midis[0] == 12 and midis[2] - midis[1] == 12:
             out.append(f"\t\t\t\t\t<bm:Note index='{slot}' pitch='{midis[1] - PITCH_OFFSET}' pianoTonic=\"true\" />")
         else:
-            for m in [x for x in midis if x >= PITCH_OFFSET]:
+            for m in midis[len(midis) // 2:]:
                 out.append(f"\t\t\t\t\t<bm:Note index='{slot}' pitch='{m - PITCH_OFFSET}' />")
     out.append('\t\t\t\t</bm:Program>')
     return '\n'.join(out)

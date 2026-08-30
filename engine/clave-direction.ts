@@ -46,6 +46,11 @@ export function classifyProgram(instrument: IInstrument, program: IProgram): Pat
  * So the two bars of each cell trade rhythms, and the ordered stream of notes is re-laid onto the result.
  * Root/dyad alternation, chord order and the number of attacks per chord all survive; what moves is which
  * side of the clave the busy bar and the sparse bar fall on.
+ *
+ * This derives a 3-2 guajeo; it does not reproduce anyone else's. Recordings of the native app show its
+ * two directions are separately composed rather than transformed — its 3-2 i-iv has six attacks against
+ * the eleven of its 2-3, so no rule connects them. The rhythm here is the documented one and matches what
+ * its guajeos do; the harmony is this library's own reading of "the chord progression stays put".
  */
 export function swapGuajeoSides(program: IProgram): IProgram {
   const cell = SAMPLES_PER_BAR * 2;
