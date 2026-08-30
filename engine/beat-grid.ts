@@ -1,4 +1,5 @@
 import { IInstrument, IMachine } from './machine-interfaces';
+import { programFor } from './clave-direction';
 
 /** Programs are indexed in half-beats; a bar is four beats, so eight of them. */
 const SAMPLES_PER_BEAT = 2;
@@ -46,7 +47,7 @@ function programIndexAt(instrument: IInstrument, machine: IMachine, column: numb
 
 export function buildGrid(machine: IMachine, columns: number): IGridRow[] {
   return shownInstruments(machine).map((instrument) => {
-    const program = instrument.programs[instrument.activeProgram];
+    const program = programFor(instrument.programs[instrument.activeProgram], machine.claveDirection);
     const cells: (IGridCell | null)[] = [];
     for (let column = 0; column < columns; column++) {
       const at = programIndexAt(instrument, machine, column, program.length);

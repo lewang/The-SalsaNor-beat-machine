@@ -13,6 +13,9 @@ export interface IProgram {
   /* The direction this pattern was written in, for parts the engine cannot rotate. Absent where the
      pattern is direction-agnostic, and absent where nobody has judged it yet — see programDirection. */
   clave?: ClaveDirection;
+  /* Set where the pattern is a standard guajeo, whose other direction is the measure swap rather than
+     new material. Compositions and transcriptions do not get this — theirs has to be written. */
+  claveSwap?: boolean;
 }
 
 export interface IInstrument {

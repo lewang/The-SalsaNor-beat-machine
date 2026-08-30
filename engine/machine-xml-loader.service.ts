@@ -72,6 +72,7 @@ export class MachineXMLLoader {
       title: element.getAttribute('title') || '',
       length: parseInt(element.getAttribute('length')!, 10) || 0,
       ...(clave === '2-3' || clave === '3-2' ? { clave } : {}),
+      ...(element.getAttribute('claveSwap') === 'true' ? { claveSwap: true } : {}),
       notes: this.childElements(element)
         .filter((node) => node.namespaceURI === this.NS_BEAT_MACHINE && node.localName === 'Note')
         .map((noteElement) => ({

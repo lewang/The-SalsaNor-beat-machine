@@ -228,7 +228,7 @@
 			<leftHandPitchOffset>48</leftHandPitchOffset>
 			<keyedInstrument>true</keyedInstrument>
 			<programs>
-				<bm:Program clave="2-3" title="Montuno I-IV-V-IV" length='16'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno I-IV-V-IV" length='16'>
 					<bm:Note index='0' pitch='0' pianoTonic="true" />
 					<bm:Note index='2' pitch='4' />
 					<bm:Note index='2' pitch='7' />
@@ -244,7 +244,7 @@
 					<bm:Note index='15' pitch='0' pianoTonic="true" />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno I-IV-V-IV + arpg. + passtone" length='32'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno I-IV-V-IV + arpg. + passtone" length='32'>
 					<bm:Note index='0' pitch='0' pianoTonic="true" />
 					<bm:Note index='2' pitch='4' />
 					<bm:Note index='2' pitch='7' />
@@ -447,7 +447,7 @@
 					<bm:Note index='29' pitch='4' />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno i-iv-V-iv" length='16'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno i-iv-V-iv" length='16'>
 					<bm:Note index='0' pitch='0' pianoTonic="true" />
 					<bm:Note index='2' pitch='3' />
 					<bm:Note index='2' pitch='7' />
@@ -484,7 +484,7 @@
 					<bm:Note index='30' pitch='-1' pianoTonic="true" />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno 3" length='32'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno 3" length='32'>
 					<bm:Note index='0' pitch='0' pianoTonic="true" />
 					<bm:Note index='2' pitch='3' />
 					<bm:Note index='2' pitch='7' />
@@ -515,7 +515,7 @@
 					<bm:Note index='31' pitch='-1' pianoTonic="true" />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Simple i-vi" length='16'>
+				<bm:Program claveSwap="true" clave="2-3" title="Simple i-vi" length='16'>
 					<bm:Note index='0' pitch='0' />
 					<bm:Note index='0' pitch='3' />
 					<bm:Note index='0' pitch='7' />
@@ -536,7 +536,7 @@
 					<bm:Note index='15' pitch='8' />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno I-V-V-I" length='16'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno I-V-V-I" length='16'>
 					<bm:Note index='0' pitch='0' pianoTonic="true" />
 					<bm:Note index='2' pitch='4' />
 					<bm:Note index='2' pitch='7' />
@@ -552,7 +552,7 @@
 					<bm:Note index='15' pitch='0' pianoTonic="true" />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno II-V-I-I" length='16'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno II-V-I-I" length='16'>
 					<bm:Note index='0' pitch='2' pianoTonic="true" />
 					<bm:Note index='2' pitch='6' />
 					<bm:Note index='2' pitch='9' />
@@ -568,7 +568,7 @@
 					<bm:Note index='15' pitch='2' pianoTonic="true" />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno i-IV-ii-V" length='16'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno i-IV-ii-V" length='16'>
 					<bm:Note index='0' pitch='0' pianoTonic="true" />
 					<bm:Note index='2' pitch='3' />
 					<bm:Note index='2' pitch='7' />
@@ -584,7 +584,7 @@
 					<bm:Note index='15' pitch='0' pianoTonic="true" />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno I-IV-V-IV Triads" length='16'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno I-IV-V-IV Triads" length='16'>
 					<bm:Note index='0' pitch='7' hand="right" />
 					<bm:Note index='0' pitch='16' hand="right" />
 					<bm:Note index='2' pitch='12' hand="right" />
@@ -740,7 +740,7 @@
 					<bm:Note index='31' pitch='19' />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno I-V-V-I + Passing Tones" length='32'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno I-V-V-I + Passing Tones" length='32'>
 					<bm:Note index='0' pitch='7' pianoTonic="true" />
 					<bm:Note index='2' pitch='12' />
 					<bm:Note index='2' pitch='16' />
@@ -769,7 +769,7 @@
 					<bm:Note index='31' pitch='9' pianoTonic="true" />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno i-V-V-i (minor)" length='32'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno i-V-V-i (minor)" length='32'>
 					<bm:Note index='0' pitch='7' pianoTonic="true" />
 					<bm:Note index='2' pitch='12' />
 					<bm:Note index='2' pitch='15' />
@@ -798,7 +798,7 @@
 					<bm:Note index='31' pitch='8' pianoTonic="true" />
 				</bm:Program>
 
-				<bm:Program clave="2-3" title="Montuno V-V-I-I" length='32'>
+				<bm:Program claveSwap="true" clave="2-3" title="Montuno V-V-I-I" length='32'>
 					<bm:Note index='0' pitch='7' pianoTonic="true" />
 					<bm:Note index='1' pitch='11' />
 					<bm:Note index='2' pitch='14' />

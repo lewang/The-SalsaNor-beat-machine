@@ -4,6 +4,7 @@ import { InstrumentPlayer } from './instrument-player';
 import { createMachine } from './machine';
 import { IInstrument, IMachine } from './machine-interfaces';
 import { INSTRUCTOR_ID, IVoiceCycle, voiceSoundsAt } from './drill';
+import { programFor } from './clave-direction';
 
 // Programs are indexed in half-beats, so one bar of salsa is eight of them. Rotating a
 // clave-respecting program by a bar is what turns 2-3 around into 3-2.
@@ -97,7 +98,12 @@ export class BeatEngine {
         }),
 
         observe(this.machine, 'claveDirection', () => {
-          this.rescheduleInstruments((instrument) => instrument.respectsClave);
+          // A guajeo changes with the direction as surely as a cáscara does, so both have to be re-armed.
+          this.rescheduleInstruments(
+            (instrument) =>
+              instrument.respectsClave ||
+              instrument.programs.some((program) => program.claveSwap),
+          );
         }),
       );
     }
@@ -202,7 +208,7 @@ export class BeatEngine {
       return result;
     }
     if (instrument.enabled) {
-      const program = instrument.programs[instrument.activeProgram];
+      const program = programFor(instrument.programs[instrument.activeProgram], this.machine.claveDirection);
       if (instrument.respectsClave && this.machine.claveDirection === '3-2') {
         sampleIndex += SAMPLES_PER_BAR;
       }

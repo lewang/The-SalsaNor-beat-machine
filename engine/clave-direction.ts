@@ -5,6 +5,7 @@ const SAMPLES_PER_BAR = 8;
 export type PatternClave =
   | { kind: 'rotates' }
   | { kind: 'neutral' }
+  | { kind: 'derived'; direction: ClaveDirection }
   | { kind: 'written'; direction: ClaveDirection }
   | { kind: 'unlabelled' };
 
@@ -31,9 +32,50 @@ export function classifyProgram(instrument: IInstrument, program: IProgram): Pat
     return { kind: 'neutral' };
   }
   if (program.clave) {
-    return { kind: 'written', direction: program.clave };
+    // A guajeo carries its other direction with it, so it is never crossed — it just swaps sides.
+    return { kind: program.claveSwap ? 'derived' : 'written', direction: program.clave };
   }
   return { kind: 'unlabelled' };
+}
+
+/*
+ * The other direction of a standard guajeo. Only the rhythm swaps sides — the chord progression stays put,
+ * which is what separates this from the rotation the percussion gets: rotating a montuno wholesale would
+ * carry its harmony across with it and leave the piano in a different chord from the bass.
+ *
+ * So the two bars of each cell trade rhythms, and the ordered stream of notes is re-laid onto the result.
+ * Root/dyad alternation, chord order and the number of attacks per chord all survive; what moves is which
+ * side of the clave the busy bar and the sparse bar fall on.
+ */
+export function swapGuajeoSides(program: IProgram): IProgram {
+  const cell = SAMPLES_PER_BAR * 2;
+  const moved = (index: number) => {
+    const base = Math.floor(index / cell) * cell;
+    const within = index - base;
+    return base + (within < SAMPLES_PER_BAR ? within + SAMPLES_PER_BAR : within - SAMPLES_PER_BAR);
+  };
+
+  const ordered = [...program.notes].sort((a, b) => a.index - b.index);
+  const positions = Array.from(new Set(ordered.map((note) => moved(note.index)))).sort((a, b) => a - b);
+  const sources = Array.from(new Set(ordered.map((note) => note.index))).sort((a, b) => a - b);
+
+  const notes = ordered.map((note) => ({ ...note, index: positions[sources.indexOf(note.index)] }));
+  return { ...program, notes, clave: program.clave === '3-2' ? '2-3' : '3-2' };
+}
+
+const swapCache = new WeakMap<IProgram, IProgram>();
+
+/* The program as it should sound in this direction — swapped where the pattern supports it. */
+export function programFor(program: IProgram, direction: ClaveDirection): IProgram {
+  if (!program.claveSwap || !program.clave || program.clave === direction) {
+    return program;
+  }
+  let swapped = swapCache.get(program);
+  if (!swapped) {
+    swapped = swapGuajeoSides(program);
+    swapCache.set(program, swapped);
+  }
+  return swapped;
 }
 
 export function activeProgramOf(instrument: IInstrument): IProgram | undefined {
