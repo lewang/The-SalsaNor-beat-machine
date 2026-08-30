@@ -199,7 +199,7 @@ export const BeatMachineUI = observer(({ machines }: IBeatMachineUIProps) => {
       <div className={classnames(styles.card, styles.instrumentList)}>
         {machine?.instruments.map((instrument) => (
           <div key={instrument.id} className={styles.instrumentTile}>
-            <InstrumentTile instrument={instrument} />
+            <InstrumentTile instrument={instrument} claveDirection={machine.claveDirection} />
           </div>
         ))}
       </div>

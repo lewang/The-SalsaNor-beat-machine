@@ -537,6 +537,7 @@ export const BeatMachineUIGlass = observer(({ machines }: IBeatMachineUIGlassPro
           <GlassContainer key={instrument.id} className={styles.instrumentCard}>
             <InstrumentTile
               instrument={instrument}
+              claveDirection={machine.claveDirection}
               languages={instrument.id === 'instructor' ? INSTRUCTOR_LANGUAGES : undefined}
               language={instructorLanguage}
               onLanguageChange={setInstructorLanguage}

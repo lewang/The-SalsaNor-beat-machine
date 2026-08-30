@@ -83,6 +83,29 @@ export function programFor(program: IProgram, direction: ClaveDirection): IProgr
   return swapped;
 }
 
+/*
+ * Whether a pattern belongs in the list for this direction. A part with nothing to say about clave —
+ * percussion, or a tumbao whose rhythm repeats each bar — belongs in both; a guajeo carries its other
+ * direction with it, so it does too; anything else appears only under the direction it was written in.
+ */
+export function programVisibleIn(program: IProgram, direction: ClaveDirection): boolean {
+  return !program.clave || Boolean(program.claveSwap) || program.clave === direction;
+}
+
+/*
+ * The programs to offer, by index. The one already playing is always among them even when the direction
+ * has moved away from it: dropping it would silently change what you are hearing, and the crossed marker
+ * is there to explain why it looks out of place.
+ */
+export function visibleProgramIndices(instrument: IInstrument, direction: ClaveDirection): number[] {
+  const visible = instrument.programs
+    .map((program, index) => (programVisibleIn(program, direction) ? index : -1))
+    .filter((index) => index >= 0);
+  return visible.includes(instrument.activeProgram)
+    ? visible
+    : [...visible, instrument.activeProgram].sort((a, b) => a - b);
+}
+
 export function activeProgramOf(instrument: IInstrument): IProgram | undefined {
   return instrument.programs[instrument.activeProgram];
 }

@@ -2,7 +2,8 @@ import { FormControl, IconButton, MenuItem, Select, Slider } from '@mui/material
 import classnames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useState, useEffect, useRef } from 'react';
-import { IInstrument } from '../engine/machine-interfaces';
+import { ClaveDirection, IInstrument } from '../engine/machine-interfaces';
+import { visibleProgramIndices } from '../engine/clave-direction';
 import styles from './css/instrument-tile.module.css';
 import SettingsIcon from '@mui/icons-material/Settings';
 import VolumeIcon from '@mui/icons-material/VolumeUp';
@@ -30,13 +31,14 @@ const MENU_PROPS = {
 
 interface IInstrumentTileProps {
   instrument: IInstrument;
+  claveDirection: ClaveDirection;
   languages?: ILanguageOption[];
   language?: string;
   onLanguageChange?: (language: string) => void;
 }
 
 export const InstrumentTile = observer((props: IInstrumentTileProps) => {
-  const { instrument, languages, language, onLanguageChange } = props;
+  const { instrument, claveDirection, languages, language, onLanguageChange } = props;
   const [showSettings, setShowSettings] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -117,9 +119,10 @@ export const InstrumentTile = observer((props: IInstrumentTileProps) => {
           onChange={(e) => (instrument.activeProgram = Number(e.target.value))}
           MenuProps={MENU_PROPS}
         >
-          {instrument.programs.map((program, index) => (
-            <MenuItem key={program.title} value={index}>
-              {program.title}
+          {/* The patterns written for this direction, and whichever is already playing. */}
+          {visibleProgramIndices(instrument, claveDirection).map((index) => (
+            <MenuItem key={instrument.programs[index].title} value={index}>
+              {instrument.programs[index].title}
             </MenuItem>
           ))}
         </Select>
