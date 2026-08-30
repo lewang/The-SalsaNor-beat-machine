@@ -69,6 +69,16 @@ def render(inst, program, bpm, cycles, key_note=0):
         if both and hand != 'right':
             plan.append((index, f'{ident}-{pitch + left}', velocity))
 
+    def voiced(chunk):
+        """Ease the sample out. Cutting a piano note dead leaves a step in the waveform, which is a click
+        with a broad spectrum — an onset detector reads it as a stroke one sample-length after the real
+        one, and at slow tempos there is no following note to mask it."""
+        fade = min(int(0.02 * SR), len(chunk) // 4)
+        if fade > 0:
+            chunk = chunk.copy()
+            chunk[-fade:] *= np.linspace(1.0, 0.0, fade)
+        return chunk
+
     length = int(program.get('length'))
     step = 60.0 / bpm / 2
     buf = np.zeros(int((length * cycles * step + 3) * SR))
@@ -78,7 +88,7 @@ def render(inst, program, bpm, cycles, key_note=0):
             if info is None:
                 print(f'  !! missing sample {sample}')
                 continue
-            chunk = audio[int(info[1]):int(info[1]) + int(info[2])] * velocity
+            chunk = voiced(audio[int(info[1]):int(info[1]) + int(info[2])]) * velocity
             at = int((cycle * length + index) * step * SR)
             buf[at:at + len(chunk)] += chunk
     return buf / (np.max(np.abs(buf)) or 1) * 0.89
